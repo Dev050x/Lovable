@@ -8,3 +8,7 @@ export const generateSchema = z.object({
     projectId: z.string(),
     chatId: z.string(),
 });
+
+export const projectIdSchema = z.object({
+    projectId: z.string(),
+});

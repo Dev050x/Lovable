@@ -4,7 +4,7 @@ import { generateText, stepCountIs, streamText } from "ai";
 import { SYSTEM_PROMPT } from "../system_prompt.js";
 import { createFile, deleteFile, readFile, updateFile } from "../tool.js";
 import { Sandbox } from "@e2b/code-interpreter";
-import { generateSchema, promptSchema } from "../schema/ai.schema.js";
+import { generateSchema, projectIdSchema, promptSchema } from "../schema/ai.schema.js";
 import { groq } from "@ai-sdk/groq";
 import { prisma } from "../utils/prisma.js";
 import { ConversationType, MessageFrom, ProjectStatus } from "@prisma/client";
@@ -113,8 +113,8 @@ export const generateProject = async (req: Request, res: Response) => {
             console.log("length is: ", steps.length);
 
             await prisma.project.update({
-                where: {id: projectId},
-                data: {status: ProjectStatus.READY}
+                where: { id: projectId },
+                data: { status: ProjectStatus.READY }
             });
 
             for (const step of steps) {
@@ -134,7 +134,7 @@ export const generateProject = async (req: Request, res: Response) => {
                         }
                     })
                 }
-                
+
                 if (step.text) {
                     await prisma.conversationHistory.create({
                         data: {
@@ -165,7 +165,7 @@ export const getAllchats = async (req: Request, res: Response) => {
     let projectId = req.params.projectId;
 
     if (Array.isArray(projectId)) {
-        projectId = projectId[0]; 
+        projectId = projectId[0];
     }
 
     if (!projectId) {
@@ -173,9 +173,9 @@ export const getAllchats = async (req: Request, res: Response) => {
     }
 
     const project = await prisma.project.findUnique({
-        where: {id: projectId},
-        include: {conversationHistory: {orderBy: {createdAt: "asc"}}}
-    }); 
+        where: { id: projectId },
+        include: { conversationHistory: { orderBy: { createdAt: "asc" } } }
+    });
     console.log("projects is: ", project?.conversationHistory);
 
     return res.json({
@@ -183,4 +183,31 @@ export const getAllchats = async (req: Request, res: Response) => {
         projectStatus: project?.status,
         chatId: project?.conversationHistory[0]?.id,
     });
+}
+
+export const getProject = async (req: Request, res: Response) => {
+    console.log("params: ", req.params.projectId);
+    const validatedData = projectIdSchema.safeParse(req.params);
+
+    if (!validatedData.success) {
+        return res.status(400).json({
+            success: false,
+            error: "Invalid Request Body"
+        })
+    }
+
+    const { projectId } = validatedData.data;
+
+    const project = await prisma.project.findUnique({
+        where: {
+            id: projectId
+        }
+    });
+
+    const url = `https://3000-${project?.SandboxId}.e2b.app`;
+
+    return res.json({
+        url,
+    });
+
 }
