@@ -34,3 +34,9 @@ export async function generateProject(projectId: string, chatId: string) {
   });
   return response.json();
 };
+
+
+export async function getProject(projectId: string) {
+  const response = await fetch(`${BASE_URL}/api/project/${projectId}`);
+  return response.json();
+} 

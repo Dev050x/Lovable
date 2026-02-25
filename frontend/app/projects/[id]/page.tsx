@@ -1,5 +1,6 @@
 "use client"
-import { generateProject, getAllChats } from "@/app/utils/actions";
+import { PreviewToolbar } from "@/app/components/preview_button";
+import { generateProject, getAllChats, getProject } from "@/app/utils/actions";
 import {
     ResizableHandle,
     ResizablePanel,
@@ -7,12 +8,16 @@ import {
 } from "@/components/ui/resizable"
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+
 type ChatItem = { from: string, content: string };
 
 export default function Project() {
     const { id } = useParams();
     const [chatHistory, setChatHistory] = useState<ChatItem[]>([]);
     const [url, setUrl] = useState<string>("");
+    const [preview, setPreview] = useState(true);
+    console.log("project url is: ", url);
+
     useEffect(() => {
         const chats = async () => {
             let chats = await getAllChats(id as string);
@@ -34,8 +39,15 @@ export default function Project() {
                 let chats = await getAllChats(id as string);
                 const project_status = chats.projectStatus;
                 const conversationHistory = chats.converSationHistory.map((item: any) => ({ from: item.from, content: item.content }));
-                setChatHistory(chatHistory => [...chatHistory, ...conversationHistory]);
+                setChatHistory(chatHistory => [...conversationHistory]);
             }
+
+            if (project_status === "READY") {
+                let projectId = await getProject(id as string);
+                console.log("projectId is: ", projectId);
+                setUrl(projectId.url);
+            }
+
         };
         chats();
     }, [id]);
@@ -45,8 +57,8 @@ export default function Project() {
             orientation="horizontal"
             className="min-h-screen max-w-screen rounded-lg md:min-w-112.5"
         >
-            <ResizablePanel defaultSize="25%">
-                <div className="flex items-center justify-center p-6 h-screen">
+            <ResizablePanel defaultSize="30%" maxSize="50%">
+                <div className="flex items-center justify-center p-2 h-screen">
                     <div className="flex flex-col h-screen w-full">
                         <div className="flex-5 border border-black w-full">
                             {chatHistory.map((item, key) => {
@@ -63,9 +75,14 @@ export default function Project() {
                 </div>
             </ResizablePanel>
             <ResizableHandle withHandle />
-            <ResizablePanel defaultSize="75%">
-                <div className="flex h-full items-center justify-center p-6">
-                    <span className="font-semibold">{url}</span>
+            <ResizablePanel defaultSize="70%">
+                <div className="flex flex-col h-full">
+                    <div className="bg-[#0A0A0A] w-full text-white h-12 py-2 px-4 gap-2">
+                        <PreviewToolbar onCode={() => setPreview(false)} onPreview={() => setPreview(true)} />
+                    </div>
+                    <div className="flex-1 w-full min-h-0">
+                        {preview ? (url ? <iframe src={url} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" className="h-full w-full" /> : <h1>Generating...</h1>) : <h1>file view</h1>}
+                    </div>
                 </div>
             </ResizablePanel>
         </ResizablePanelGroup>
