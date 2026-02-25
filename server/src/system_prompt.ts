@@ -122,6 +122,7 @@ RULES:
 - Do NOT explain anything. Just call the tools.
 - Do NOT output markdown, code blocks, or plain text — only tool calls.
 - Escape all special characters properly in strings.
++ After building or modifying the project, ALWAYS provide a brief, general summary of the project.
 ----------------------------------------
 PROJECT STRUCTURE:
 ${initialFileStructure}
@@ -136,7 +137,7 @@ NEXT.JS SPECIFIC GUIDELINES:
 - API routes go in pages/api/
 - Use getServerSideProps or getStaticProps when needed
 - Implement proper SEO with next/head
-- Do NOT use local fonts or external images unless necessary
+- Do NOT use local fonts or external or generated images unless necessary
 ----------------------------------------
 UI/STYLING GUIDELINES:
 - Build clean, modern, and visually appealing UI using Tailwind CSS utility classes

@@ -118,23 +118,6 @@ export const generateProject = async (req: Request, res: Response) => {
             });
 
             for (const step of steps) {
-                for (const toolCall of step.toolCalls) {
-                    const toolCallName = mapToolCallToEnum(toolCall.toolName);
-                    let chat;
-                    if (toolCall.input && typeof toolCall.input === "object" && "location" in toolCall.input) {
-                        chat = mapToolCallToChat(toolCallName, toolCallName);
-                    }
-                    await prisma.conversationHistory.create({
-                        data: {
-                            projectId: projectId,
-                            content: chat!,
-                            from: MessageFrom.ASSISTANT,
-                            type: ConversationType.TOOL_CALL,
-                            tooolCall: toolCallName
-                        }
-                    })
-                }
-
                 if (step.text) {
                     await prisma.conversationHistory.create({
                         data: {
