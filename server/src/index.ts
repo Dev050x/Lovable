@@ -13,4 +13,3 @@ app.use("/api", aiRouter);
 app.listen(PORT, () => {
     console.log(`Server is listening on Port ${PORT}`);
 })
-
