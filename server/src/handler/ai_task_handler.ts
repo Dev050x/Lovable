@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { response, type Request, type Response } from "express";
-import { generateText, stepCountIs, streamText } from "ai";
+import { generateText, RetryError, stepCountIs, streamText } from "ai";
 import { SYSTEM_PROMPT } from "../system_prompt.js";
 import { createFile, deleteFile, readFile, updateFile } from "../tool.js";
 import { Sandbox } from "@e2b/code-interpreter";
@@ -8,8 +8,7 @@ import { generateSchema, projectIdSchema, promptSchema } from "../schema/ai.sche
 import { groq } from "@ai-sdk/groq";
 import { prisma } from "../utils/prisma.js";
 import { ConversationType, MessageFrom, ProjectStatus } from "@prisma/client";
-import { mapToolCallToChat, mapToolCallToEnum } from "../utils/ai_response.js";
-
+import { getFiles } from "../utils/sandbox_files.js";
 
 export const create_project = async (req: Request, res: Response) => {
     const validatedData = promptSchema.safeParse(req.body);
@@ -36,6 +35,7 @@ export const create_project = async (req: Request, res: Response) => {
         data: {
             title: text,
             SandboxId: sandbox.sandboxId,
+            Files: {}
         }
     });
 
@@ -110,8 +110,6 @@ export const generateProject = async (req: Request, res: Response) => {
         stopWhen: stepCountIs(10),
 
         onFinish: async ({ steps }) => {
-            console.log("length is: ", steps.length);
-
             await prisma.project.update({
                 where: { id: projectId },
                 data: { status: ProjectStatus.READY }
@@ -145,15 +143,16 @@ export const generateProject = async (req: Request, res: Response) => {
 
 
 export const getAllchats = async (req: Request, res: Response) => {
-    let projectId = req.params.projectId;
+    const validatedData = projectIdSchema.safeParse(req.query);
 
-    if (Array.isArray(projectId)) {
-        projectId = projectId[0];
+    if (!validatedData.success) {
+        return res.status(400).json({
+            success: false,
+            error: "Invalid Request Body"
+        })
     }
 
-    if (!projectId) {
-        return res.status(400).json({ status: false, error: "Missing projectId" });
-    }
+    const { projectId } = validatedData.data;
 
     const project = await prisma.project.findUnique({
         where: { id: projectId },
@@ -168,9 +167,9 @@ export const getAllchats = async (req: Request, res: Response) => {
     });
 }
 
-export const getProject = async (req: Request, res: Response) => {
+export const getProjectUrl = async (req: Request, res: Response) => {
     console.log("params: ", req.params.projectId);
-    const validatedData = projectIdSchema.safeParse(req.params);
+    const validatedData = projectIdSchema.safeParse(req.query);
 
     if (!validatedData.success) {
         return res.status(400).json({
@@ -193,4 +192,41 @@ export const getProject = async (req: Request, res: Response) => {
         url,
     });
 
+}
+
+
+export const getAllFiles = async (req: Request, res: Response) => {
+    console.log("request is received");
+    console.log("request parama: ", req.query);
+    const validatedData = projectIdSchema.safeParse(req.query);
+    console.log("validated Data: ", validatedData);
+
+    if (!validatedData.success) {
+        return res.status(400).json({
+            success: false,
+            error: "Invalid Request Body"
+        })
+    };
+
+    const { projectId } = validatedData.data;
+    console.log("projectId is: ", projectId);
+
+    const project = await prisma.project.findUnique({
+        where: {
+            id: projectId
+        }
+    });
+    if (!project) {
+        return res.status(404).json({
+            success: false,
+            error: "Project Not Found"
+        })
+    };
+
+    const sandbox = await Sandbox.connect(project.SandboxId);
+    const files = await getFiles(sandbox);
+    console.log("files are: ", files);
+    return res.json({
+        files
+    });
 }

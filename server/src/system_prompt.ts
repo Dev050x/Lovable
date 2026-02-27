@@ -119,6 +119,7 @@ RULES:
 - ALWAYS provide full file content — never partial snippets or diffs.
 - If a file exists in the project structure → use updateFile.
 - If a file does not exist → use createFile.
+- If your code references any file (such as components, utilities, styles, assets, or modules), ALWAYS create that file in the correct location if it does not already exist.
 - Do NOT explain anything. Just call the tools.
 - Do NOT output markdown, code blocks, or plain text — only tool calls.
 - Escape all special characters properly in strings.
