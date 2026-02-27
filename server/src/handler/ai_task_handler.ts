@@ -4,11 +4,12 @@ import { generateText, RetryError, stepCountIs, streamText } from "ai";
 import { SYSTEM_PROMPT } from "../system_prompt.js";
 import { createFile, deleteFile, readFile, updateFile } from "../tool.js";
 import { Sandbox } from "@e2b/code-interpreter";
-import { generateSchema, projectIdSchema, promptSchema } from "../schema/ai.schema.js";
+import { fileContentSchema, generateSchema, projectIdSchema, promptSchema } from "../schema/ai.schema.js";
 import { groq } from "@ai-sdk/groq";
 import { prisma } from "../utils/prisma.js";
 import { ConversationType, MessageFrom, ProjectStatus } from "@prisma/client";
-import { getFiles } from "../utils/sandbox_files.js";
+import { getFileData, getFiles } from "../utils/sandbox_files.js";
+import { fi } from "zod/locales";
 
 export const create_project = async (req: Request, res: Response) => {
     const validatedData = promptSchema.safeParse(req.body);
@@ -229,4 +230,40 @@ export const getAllFiles = async (req: Request, res: Response) => {
     return res.json({
         files
     });
+}
+
+
+export const getFileContent = async (req: Request, res: Response) => {
+    console.log("request data", req.query);
+    const validatedData = fileContentSchema.safeParse(req.query);
+
+    if (!validatedData.success) {
+        return res.status(400).json({
+            success: false,
+            error: "Invalid Request Body"
+        })
+    };
+
+    const { projectId, path } = validatedData.data;
+
+    const project = await prisma.project.findUnique({
+        where: {
+            id: projectId as string
+        }
+    });
+
+    if (!project) {
+        return res.status(404).json({
+            success: false,
+            error: "Project Not Found"
+        })
+    };
+    const sandbox = await Sandbox.connect(project.SandboxId);
+
+    const fileContent = await getFileData(sandbox, path as string);
+    
+    return res.json({
+        content: fileContent
+    })
+
 }

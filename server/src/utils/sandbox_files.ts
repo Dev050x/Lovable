@@ -11,7 +11,7 @@ export const getFiles = async (sandbox: Sandbox ) => {
     return filtered_files;
 }
 
-export const getFileContent= async (sandbox: Sandbox, path: string) => {
+export const getFileData= async (sandbox: Sandbox, path: string) => {
     const content = await sandbox.files.read(path);
     return content;
 }
