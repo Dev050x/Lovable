@@ -1,6 +1,7 @@
 "use client"
 import CodeBrowser from "@/app/components/CodeBrowser";
-import { PreviewToolbar } from "@/app/components/preview_button";
+import InputField from "@/app/components/InputField";
+import { PreviewToolbar } from "@/app/components/PreviewButton";
 import { generateProject, getAllChats, getProject } from "@/app/utils/actions";
 import {
     ResizableHandle,
@@ -58,18 +59,18 @@ export default function Project() {
             orientation="horizontal"
             className="min-h-screen max-w-screen rounded-lg md:min-w-112.5"
         >
-            <ResizablePanel defaultSize="30%" maxSize="50%">
+            <ResizablePanel defaultSize="30%" maxSize="40%">
                 <div className="flex items-center justify-center p-2 h-screen">
                     <div className="flex flex-col h-screen w-full">
-                        <div className="flex-5 border border-black w-full">
+                        <div className="flex-5 border border-black w-full overflow-y-scroll no-scrollbar">
                             {chatHistory.map((item, key) => {
                                 return <div key={key} className={`flex w-full ${item.from === "ASSISTANT" ? "justify-start" : "justify-end"}`}>
                                     <div>{item.content}</div>
                                 </div>
                             })}
                         </div>
-                        <div className="flex-1 w-full">
-                            <input type="text" placeholder="type your query here" className="border border-black w-full h-full" />
+                        <div className="bg-gradient w-full">
+                            <InputField />
                         </div>
                     </div>
 
@@ -82,7 +83,7 @@ export default function Project() {
                         <PreviewToolbar onCode={() => setPreview(false)} onPreview={() => setPreview(true)} />
                     </div>
                     <div className="flex-1 w-full min-h-0">
-                        {preview ? (url ? <iframe src={url} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" className="h-full w-full" /> : <h1>Generating...</h1>) : (url ? <CodeBrowser projectId={id as string}/> : <h1> Generating the project</h1>) }
+                        {preview ? (url ? <iframe src={url} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" className="h-full w-full" /> : <h1>Generating...</h1>) : (url ? <CodeBrowser projectId={id as string} /> : <h1> Generating the project</h1>)}
                     </div>
                 </div>
             </ResizablePanel>
