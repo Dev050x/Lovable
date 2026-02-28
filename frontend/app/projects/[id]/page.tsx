@@ -1,4 +1,5 @@
 "use client"
+import CodeBrowser from "@/app/components/CodeBrowser";
 import { PreviewToolbar } from "@/app/components/preview_button";
 import { generateProject, getAllChats, getProject } from "@/app/utils/actions";
 import {
@@ -81,7 +82,7 @@ export default function Project() {
                         <PreviewToolbar onCode={() => setPreview(false)} onPreview={() => setPreview(true)} />
                     </div>
                     <div className="flex-1 w-full min-h-0">
-                        {preview ? (url ? <iframe src={url} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" className="h-full w-full" /> : <h1>Generating...</h1>) : <h1>file view</h1>}
+                        {preview ? (url ? <iframe src={url} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" className="h-full w-full" /> : <h1>Generating...</h1>) : (url ? <CodeBrowser projectId={id as string}/> : <h1> Generating the project</h1>) }
                     </div>
                 </div>
             </ResizablePanel>
