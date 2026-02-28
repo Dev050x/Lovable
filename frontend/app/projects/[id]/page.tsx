@@ -30,6 +30,11 @@ export default function Project() {
             setInput("");
             const result = await updateProject(id as string, input);
             setUrl(result.url);
+            let chats = await getAllChats(id as string);
+            const project_status = chats.projectStatus;
+            const conversationHistory = chats.converSationHistory.map((item: any) => ({ from: item.from, content: item.content }));
+            const chatId = chats.chatId;
+            setChatHistory(conversationHistory);
         } catch (error) {
             console.log("error", error);
         } finally {
@@ -43,7 +48,7 @@ export default function Project() {
             const project_status = chats.projectStatus;
             const conversationHistory = chats.converSationHistory.map((item: any) => ({ from: item.from, content: item.content }));
             const chatId = chats.chatId;
-            setChatHistory(chatHistory => [...chatHistory, ...conversationHistory]);
+            setChatHistory(conversationHistory  );
             console.log("projectId: ", id);
             console.log("chats is: ", chats);
             console.log("chatId is: ", chatId);
