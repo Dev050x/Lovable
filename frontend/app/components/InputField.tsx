@@ -1,12 +1,17 @@
-import { ArrowUp, Plus } from "lucide-react";
+"use client"
+import { ArrowUp, Loader, Plus } from "lucide-react";
+import { useState } from "react";
 
-export default function InputField() {
+export default function InputField({ onButtonClick, input, setInput, isLoading, setIsLoading }: { onButtonClick: () => void, input: string, setInput: React.Dispatch<React.SetStateAction<string>>, isLoading: boolean, setIsLoading: React.Dispatch<React.SetStateAction<boolean>> }) {
+    
     return (
         <div className="flex flex-col bg-[#141414] border border-[#2e2e2e] rounded-xl w-full max-w-3xl mx-auto overflow-hidden shadow-2xl">
             <textarea
                 rows={2}
                 placeholder="Build Anything....."
                 className="w-full bg-transparent text-white text-sm placeholder-[#444] outline-none border-none resize-none px-4 pt-4 pb-2 overflow-y-scroll no-scrollbar   "
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
             />
 
             <div className="flex items-center justify-between px-3 pb-3 pt-1">
@@ -18,8 +23,8 @@ export default function InputField() {
                         <Plus />
                     </button>
                 </div>
-                <button className="flex items-center justify-center w-8 h-8 rounded-xl bg-white text-black hover:bg-gray-200 active:scale-95 transition-all font-bold text-base">
-                    <ArrowUp />
+                <button className="flex items-center justify-center w-8 h-8 rounded-xl bg-white text-black hover:bg-gray-200 active:scale-95 transition-all font-bold text-base" onClick={() => onButtonClick()} disabled={isLoading}>
+                    {isLoading ? <Loader /> :  <ArrowUp />}
                 </button>
             </div>
 

@@ -35,6 +35,19 @@ export async function generateProject(projectId: string, chatId: string) {
   return response.json();
 };
 
+export async function updateProject(projectId: string, prompt: string) {
+  const response = await fetch(`${BASE_URL}/api/project/update`, {
+    method: "POST",
+    body: JSON.stringify({
+      projectId,
+      prompt
+    }),
+    headers: {
+      'Content-type': "application/json"
+    }
+  })
+  return response.json();
+}
 
 export async function getProject(projectId: string) {
   const response = await fetch(`${BASE_URL}/api/project/?projectId=${projectId}`);

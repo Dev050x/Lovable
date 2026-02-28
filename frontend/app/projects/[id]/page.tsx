@@ -2,7 +2,7 @@
 import CodeBrowser from "@/app/components/CodeBrowser";
 import InputField from "@/app/components/InputField";
 import { PreviewToolbar } from "@/app/components/PreviewButton";
-import { generateProject, getAllChats, getProject } from "@/app/utils/actions";
+import { generateProject, getAllChats, getProject, updateProject } from "@/app/utils/actions";
 import {
     ResizableHandle,
     ResizablePanel,
@@ -18,7 +18,24 @@ export default function Project() {
     const [chatHistory, setChatHistory] = useState<ChatItem[]>([]);
     const [url, setUrl] = useState<string>("");
     const [preview, setPreview] = useState(true);
+    const [input, setInput] = useState<string>("");
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     console.log("project url is: ", url);
+
+    const handleSubmit = async () => {
+        try {
+            if (!input.trim()) return;
+            setUrl("");
+            const prompt = input;
+            setInput("");
+            const result = await updateProject(id as string, input);
+            setUrl(result.url);
+        } catch (error) {
+            console.log("error", error);
+        } finally {
+            setIsLoading(false);
+        }
+    }
 
     useEffect(() => {
         const chats = async () => {
@@ -70,7 +87,7 @@ export default function Project() {
                             })}
                         </div>
                         <div className="bg-gradient w-full">
-                            <InputField />
+                            <InputField onButtonClick={handleSubmit} input={input} setInput={setInput} isLoading={isLoading} setIsLoading={setIsLoading} />
                         </div>
                     </div>
 
