@@ -55,4 +55,5 @@ enum ProjectStatus {
   PENDING
   READY
   FAILED
+  UPDATING
 }

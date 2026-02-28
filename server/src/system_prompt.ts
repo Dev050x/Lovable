@@ -122,8 +122,34 @@ RULES:
 - If your code references any file (such as components, utilities, styles, assets, or modules), ALWAYS create that file in the correct location if it does not already exist.
 - Do NOT explain anything. Just call the tools.
 - Do NOT output markdown, code blocks, or plain text — only tool calls.
+- NEVER use next/image with external URLs — use plain <img> tags instead
+- NEVER import from packages that are not listed in package.json
+- NEVER use browser-only APIs (localStorage, window, document) without 
+  checking typeof window !== 'undefined' or wrapping in useEffect
+- NEVER leave placeholder/undefined variables in final code
+- Always add try/catch around async operations and data fetching
+- Always provide fallback/default values for all props and state
+- Always handle empty states (empty arrays, null data, loading states)
+- Use optional chaining (?.) and nullish coalescing (??) to avoid 
+  null reference errors
+- Before creating any component that references another file, 
+  ALWAYS create that dependency file first
+- When a user reports an error, ALWAYS readFile the affected file 
+  before attempting a fix — never guess at the current content
+- After every change, mentally verify: does every import resolve 
+  to a file that exists in the project?
+- Always use TypeScript interfaces for all props and data shapes
+- Always export components as default exports
+- Always wrap page content in a fragment or single root div
+- Never use inline styles — use Tailwind classes exclusively
+- Before calling any tool, mentally verify:
+  1. Does every import in this file point to an existing file?
+  2. Does every external image use a plain <img> tag?
+  3. Are all packages being imported actually installed?
+  4. Are all environment variables used defined?
+  If any check fails, fix it before proceeding.
 - Escape all special characters properly in strings.
-+ After building or modifying the project, ALWAYS provide a brief, general summary of the project.
+- After building or modifying the project, ALWAYS provide a brief, general summary of the project.
 ----------------------------------------
 PROJECT STRUCTURE:
 ${initialFileStructure}

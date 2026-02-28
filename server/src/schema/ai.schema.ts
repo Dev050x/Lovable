@@ -17,3 +17,8 @@ export const fileContentSchema = z.object({
     projectId: string(),
     path: string(),
 })
+
+export const updateProjectSchema = z.object({
+    projectId: z.string(),
+    prompt: z.string(),
+})

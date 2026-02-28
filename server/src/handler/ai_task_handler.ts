@@ -4,7 +4,7 @@ import { generateText, RetryError, stepCountIs, streamText } from "ai";
 import { SYSTEM_PROMPT } from "../system_prompt.js";
 import { createFile, deleteFile, readFile, updateFile } from "../tool.js";
 import { Sandbox } from "@e2b/code-interpreter";
-import { fileContentSchema, generateSchema, projectIdSchema, promptSchema } from "../schema/ai.schema.js";
+import { fileContentSchema, generateSchema, projectIdSchema, promptSchema, updateProjectSchema } from "../schema/ai.schema.js";
 import { groq } from "@ai-sdk/groq";
 import { prisma } from "../utils/prisma.js";
 import { ConversationType, MessageFrom, ProjectStatus } from "@prisma/client";
@@ -142,6 +142,101 @@ export const generateProject = async (req: Request, res: Response) => {
 
 }
 
+export const updateProject = async (req: Request, res: Response) => {
+    const validatedData = updateProjectSchema.safeParse(req.body);
+
+    if (!validatedData.success) {
+        return res.status(400).json({
+            success: false,
+            error: "Invalid Request Body"
+        })
+    };
+
+    const { projectId, prompt } = validatedData.data;
+
+    const project = await prisma.project.findUnique({
+        where: {
+            id: projectId,
+        }
+    });
+
+    await prisma.project.update({
+        where: {
+            id: projectId
+        },
+        data: {
+            status: ProjectStatus.UPDATING
+        }
+    });
+
+    if (!project) {
+        return res.status(404).json({
+            success: false,
+            error: "Project Not Found"
+        })
+    };
+
+    const chat = await prisma.conversationHistory.create({
+        data: {
+            projectId: projectId,
+            content: prompt,
+            from: MessageFrom.USER,
+            type: ConversationType.TEXT_MESSAGE,
+        }
+    });
+
+    const sandbox = await Sandbox.connect(project.SandboxId);
+    const host = sandbox.getHost(3000);
+    const url = `https://${host}`;
+
+    const { textStream } = streamText({
+        model: groq("openai/gpt-oss-120b"),
+
+        messages: [
+            { role: "system", content: SYSTEM_PROMPT },
+            { role: "user", content: prompt },
+        ],
+
+        tools: {
+            createFile: createFile(sandbox),
+            updateFile: updateFile(sandbox),
+            deleteFile: deleteFile(sandbox),
+            readFile: readFile(sandbox),
+        },
+
+        stopWhen: stepCountIs(10),
+
+        onFinish: async ({ steps }) => {
+            await prisma.project.update({
+                where: { id: projectId },
+                data: { status: ProjectStatus.READY }
+            });
+
+            for (const step of steps) {
+                if (step.text) {
+                    await prisma.conversationHistory.create({
+                        data: {
+                            projectId: projectId,
+                            content: step.text,
+                            from: MessageFrom.ASSISTANT,
+                            type: ConversationType.TEXT_MESSAGE,
+                        }
+                    })
+                }
+            }
+        }
+
+    });
+
+    for await (const chunk of textStream) {
+
+    }
+
+    res.status(200).json({
+        url: url
+    })
+
+}
 
 export const getAllchats = async (req: Request, res: Response) => {
     const validatedData = projectIdSchema.safeParse(req.query);
@@ -261,9 +356,10 @@ export const getFileContent = async (req: Request, res: Response) => {
     const sandbox = await Sandbox.connect(project.SandboxId);
 
     const fileContent = await getFileData(sandbox, path as string);
-    
+
     return res.json({
         content: fileContent
     })
 
 }
+
