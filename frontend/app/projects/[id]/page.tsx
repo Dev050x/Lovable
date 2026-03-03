@@ -3,6 +3,7 @@ import CodeBrowser from "@/app/components/CodeBrowser";
 import InputField from "@/app/components/InputField";
 import { PreviewToolbar } from "@/app/components/PreviewButton";
 import { generateProject, getAllChats, getProject, updateProject } from "@/app/utils/actions";
+import { Card } from "@/components/ui/card";
 import {
     ResizableHandle,
     ResizablePanel,
@@ -87,7 +88,9 @@ export default function Project() {
                         <div className="flex-5 border border-black w-full overflow-y-scroll no-scrollbar">
                             {chatHistory.map((item, key) => {
                                 return <div key={key} className={`flex w-full ${item.from === "ASSISTANT" ? "justify-start" : "justify-end"}`}>
-                                    <div>{item.content}</div>
+                                    <Card className="rounded-lg bg-muted p-2 shadow-none border-none max-w-[80%] break-words m-2" >
+                                        {item.content}
+                                    </Card>
                                 </div>
                             })}
                         </div>
