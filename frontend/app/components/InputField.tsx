@@ -2,8 +2,8 @@
 import { ArrowUp, Loader, Plus } from "lucide-react";
 import { useState } from "react";
 
-export default function InputField({ onButtonClick, input, setInput, isLoading, setIsLoading }: { onButtonClick: () => void, input: string, setInput: React.Dispatch<React.SetStateAction<string>>, isLoading: boolean, setIsLoading: React.Dispatch<React.SetStateAction<boolean>> }) {
-    
+export default function InputField({ onButtonClick, input, setInput, isLoading }: { onButtonClick: () => void, input: string, setInput: React.Dispatch<React.SetStateAction<string>>, isLoading: boolean }) {
+
     return (
         <div className="flex flex-col bg-[#141414] border border-[#2e2e2e] rounded-xl w-full max-w-3xl mx-auto overflow-hidden shadow-2xl">
             <textarea

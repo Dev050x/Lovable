@@ -36,7 +36,7 @@ export default function Home() {
         <NavBar />
       </div>
       <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-        <InputField onButtonClick={handleSubmit} input={input} setInput={setInput} isLoading={isLoading} setIsLoading={setIsLoading} />
+        <InputField onButtonClick={handleSubmit} input={input} setInput={setInput} isLoading={isLoading} />
       </div>
       <div>Kem cho </div>
     </div>
