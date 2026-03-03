@@ -1,6 +1,6 @@
 import "dotenv/config";
-import { response, type Request, type Response } from "express";
-import { generateText, RetryError, stepCountIs, streamText } from "ai";
+import { type Request, type Response } from "express";
+import { generateText, stepCountIs, streamText } from "ai";
 import { SYSTEM_PROMPT } from "../system_prompt.js";
 import { createFile, deleteFile, readFile, updateFile } from "../tool.js";
 import { Sandbox } from "@e2b/code-interpreter";
@@ -9,9 +9,11 @@ import { groq } from "@ai-sdk/groq";
 import { prisma } from "../utils/prisma.js";
 import { ConversationType, MessageFrom, ProjectStatus } from "@prisma/client";
 import { getFileData, getFiles } from "../utils/sandbox_files.js";
-import { fi } from "zod/locales";
+import { getAuth } from "@clerk/express";
 
 export const create_project = async (req: Request, res: Response) => {
+    const { userId } = await getAuth(req);
+    
     const validatedData = promptSchema.safeParse(req.body);
     if (!validatedData.success) {
         return res.status(400).json({
@@ -31,12 +33,18 @@ export const create_project = async (req: Request, res: Response) => {
             { role: "user", content: prompt }
         ]
     });
+    const user = await prisma.user.findUnique({
+        where: {
+            clerkId: userId!,
+        }
+    });
 
     const project = await prisma.project.create({
         data: {
             title: text,
             SandboxId: sandbox.sandboxId,
-            Files: {}
+            Files: {},
+            userId: user?.id!,
         }
     });
 

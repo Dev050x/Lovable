@@ -20,6 +20,7 @@
   "dependencies": {
     "@ai-sdk/google": "^3.0.30",
     "@ai-sdk/groq": "^3.0.24",
+    "@clerk/express": "^1.7.76",
     "@e2b/code-interpreter": "^2.3.3",
     "@prisma/adapter-pg": "^7.4.1",
     "@prisma/client": "^7.4.1",

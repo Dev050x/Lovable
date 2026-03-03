@@ -1,8 +1,9 @@
 import { Router } from "express";
 import { create_project, generateProject, getAllchats, getAllFiles, getFileContent, getProjectUrl, updateProject, } from "../handler/ai_task_handler.js";
-
+import { requireAuth } from "../middleware/auth.middleware.js";
 
 const aiRouter = Router();
+aiRouter.use(requireAuth);
 aiRouter.post("/project/create", create_project);
 aiRouter.post("/project/generate", generateProject);
 aiRouter.post("/project/update", updateProject);
