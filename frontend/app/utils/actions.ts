@@ -1,6 +1,15 @@
 "use server"
-
+import { auth } from "@clerk/nextjs/server";
 const BASE_URL = "http://localhost:8080"
+
+const getAuthHeaders = async () => {
+  const { getToken } = await auth();
+  const token = await getToken();
+  return {
+    "Authorization": `Bearer ${token}`,
+    "Content-type": "application/json"
+  }
+};
 
 export async function creatProject(prompt: string) {
   const response = await fetch(`${BASE_URL}/api/project/create`, {
@@ -8,16 +17,16 @@ export async function creatProject(prompt: string) {
     body: JSON.stringify({
       prompt: prompt,
     }),
-    headers: {
-      'Content-type': "application/json",
-    }
+    headers: await getAuthHeaders(),
   });
   return response.json();
 };
 
 
 export async function getAllChats(id: string) {
-  const response = await fetch(`${BASE_URL}/api/project/chats?projectId=${id}`);
+  const response = await fetch(`${BASE_URL}/api/project/chats?projectId=${id}`, {
+    headers: await getAuthHeaders(),
+  });
   return response.json();
 }
 
@@ -28,9 +37,7 @@ export async function generateProject(projectId: string, chatId: string) {
       projectId,
       chatId
     }),
-    headers: {
-      'Content-type': "application/json"
-    }
+    headers: await getAuthHeaders(),
   });
   return response.json();
 };
@@ -42,26 +49,40 @@ export async function updateProject(projectId: string, prompt: string) {
       projectId,
       prompt
     }),
-    headers: {
-      'Content-type': "application/json"
-    }
+    headers: await getAuthHeaders(),
   })
   return response.json();
 }
 
 export async function getProject(projectId: string) {
-  const response = await fetch(`${BASE_URL}/api/project/?projectId=${projectId}`);
+  const response = await fetch(`${BASE_URL}/api/project/?projectId=${projectId}`, {
+    headers: await getAuthHeaders(),
+  });
   return response.json();
-} 
+}
 
 export async function getAllFiles(projectId: string) {
-  const response = await fetch(`${BASE_URL}/api/project/files?projectId=${projectId}`);
-  return response.json(); // { files: [...] }
+  const response = await fetch(`${BASE_URL}/api/project/files?projectId=${projectId}`, {
+    headers: await getAuthHeaders(),
+  });
+  return response.json(); 
 }
 
 export async function getFileContent(projectId: string, path: string) {
   const response = await fetch(
-    `${BASE_URL}/api/project/file?projectId=${projectId}&path=${encodeURIComponent(path)}`
+    `${BASE_URL}/api/project/file?projectId=${projectId}&path=${encodeURIComponent(path)}`,
+    {
+      headers: await getAuthHeaders(),
+    }
   );
-  return response.json(); // { content: "..." }
+  return response.json();
+}
+
+
+export async function syncUserInfo(token: string, userId: string) {
+  const response = await fetch(`${BASE_URL}/api/auth/sync`, {
+    method: "POST",
+    headers: await getAuthHeaders(),
+  });
+  return response.json();
 }
