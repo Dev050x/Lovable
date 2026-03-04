@@ -37,6 +37,7 @@ export default function Project() {
                                 onCode={() => setPreview(false)}
                                 onPreview={() => setPreview(true)}
                                 onBack={() => setMobileView("chat")}
+                                url={url}
                             />
                         </div>
                         <div className="flex-1 min-h-0 w-full">
@@ -66,12 +67,12 @@ export default function Project() {
                 <ResizableHandle withHandle />
                 <ResizablePanel defaultSize="70%">
                     <div className="flex flex-col h-full overflow-scroll no-scrollbar">
-                        <div className="bg-[#0A0A0A] w-full text-white h-12 py-2 px-4 gap-2">
-                            <PreviewToolbar onCode={() => setPreview(false)} onPreview={() => setPreview(true)} />
+                        <div className="bg-[#000000] w-full text-white h-12 py-2 gap-2">
+                            <PreviewToolbar onCode={() => setPreview(false)} onPreview={() => setPreview(true)} url={url} />
                         </div>
-                        <div className="flex-1 w-full min-h-0">
+                        <div className="flex-1 w-full min-h-0 border border-[#292929] rounded-[6px]">
                             {preview
-                                ? (url ? <iframe src={url} sandbox="allow-scripts allow-same-origin allow-forms allow-popups  " className="h-full w-full" /> : <h1>Generating...</h1>)
+                                ? (url ? <iframe src={url} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" className="h-full w-full border border-[#292929] rounded-[6px]" /> : <h1>Generating...</h1>)
                                 : (url ? <CodeBrowser projectId={id as string} /> : <h1>Generating the project...</h1>)
                             }
                         </div>
