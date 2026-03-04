@@ -26,6 +26,7 @@ export function useProject(id: string) {
         setUrl("");
         setIsLoading(true);
         const current_input = input;
+        setChatHistory(prev => [...prev, { from: "USER", content: current_input }]);
         setInput("");
         try {
             const result = await updateProject(id as string, current_input);
