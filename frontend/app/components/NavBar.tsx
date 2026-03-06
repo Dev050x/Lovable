@@ -19,11 +19,11 @@ export default function NavBar() {
                                 Login
                             </Button>
                         </SignInButton>
-                        <SignUpButton mode="modal">
+                        <SignInButton mode="modal">
                             <Button className="bg-white text-black hover:bg-white/90 text-sm h-8 px-3 rounded-md font-medium">
                                 Get Started
                             </Button>
-                        </SignUpButton>
+                        </SignInButton>
                     </SignedOut>
                     <SignedIn>
                         <UserButton />

@@ -4,15 +4,21 @@ import { creatProject } from "./utils/actions";
 import { useRouter } from "next/navigation";
 import InputField from "./components/InputField";
 import NavBar from "./components/NavBar";
+import { useAuth } from "@clerk/nextjs";
 
 export default function Home() {
   const [input, setInput] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
+  const { isSignedIn } = useAuth();
 
   const handleSubmit = async () => {
     try {
       if (!input.trim()) return;
+      if(!isSignedIn) {
+        console.log("User not signed in");
+        return;
+      }
       setIsLoading(true);
       const result = await creatProject(input);
       router.push(`/projects/${result.projectId}`);
