@@ -1,6 +1,6 @@
 "use server"
 import { auth } from "@clerk/nextjs/server";
-const BASE_URL = "http://localhost:8080"
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 const getAuthHeaders = async () => {
   const { getToken } = await auth();

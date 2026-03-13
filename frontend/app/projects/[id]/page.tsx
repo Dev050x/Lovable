@@ -19,7 +19,7 @@ export default function Project() {
 
     return (
         <>
-            {/* ---------- MOBILE ---------- */}
+            {/* mobile view*/}
             <div className="h-screen overflow-hidden md:hidden">
                 {mobileView === "chat" ? (
                     <ChatPanel
@@ -42,15 +42,15 @@ export default function Project() {
                         </div>
                         <div className="flex-1 min-h-0 w-full">
                             {preview
-                                ? (url ? <iframe src={url} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" className="h-full w-full" /> : <h1>Generating...</h1>)
-                                : (url ? <CodeBrowser projectId={id as string} /> : <h1>Generating the project...</h1>)
+                                ? (url ? <iframe src={url} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" className="h-full w-full" /> : <div className="flex items-center justify-center font-bold h-full">Generating the content...</div>)
+                                : (url ? <CodeBrowser projectId={id as string} /> : <div className="flex items-center justify-center font-bold h-full">Generating the content...</div>)
                             }
                         </div>
                     </div>
                 )}
             </div>
 
-            {/* ---------- DESKTOP ---------- */}
+            {/* desktop view */}
             <ResizablePanelGroup
                 orientation="horizontal"
                 className="hidden md:flex min-h-screen max-w-screen rounded-lg"
@@ -72,8 +72,8 @@ export default function Project() {
                         </div>
                         <div className="flex-1 w-full min-h-0 border border-[#292929] rounded-[6px]">
                             {preview
-                                ? (url ? <iframe src={url} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" className="h-full w-full border border-[#292929] rounded-[6px]" /> : <h1>Generating...</h1>)
-                                : (url ? <CodeBrowser projectId={id as string} /> : <h1>Generating the project...</h1>)
+                                ? (url ? <iframe src={url} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" className="h-full w-full border border-[#292929] rounded-[6px]" /> :  <div className="flex items-center justify-center font-bold h-full">Generating the content...</div>)
+                                : (url ? <CodeBrowser projectId={id as string} /> : <div className="flex items-center justify-center font-bold h-full">Generating the content...</div>)
                             }
                         </div>
                     </div>

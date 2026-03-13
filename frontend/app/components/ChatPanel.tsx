@@ -1,5 +1,6 @@
 "use client"
 import InputField from "@/app/components/InputField";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 type ChatItem = { from: string, content: string };
@@ -19,12 +20,16 @@ export default function ChatPanel({ chatHistory, input, setInput, isLoading, onS
             {/* mobile only top bar */}
             <div className="flex items-center justify-between mb-2 md:hidden">
                 <span className="font-semibold text-sm">Chat</span>
-                <button
+                {/* <button
                     onClick={onPreviewClick}
-                    className="text-sm px-3 py-1 rounded-md bg-black text-white"
+                    className="relative inline-flex items-center justify-center h-7 rounded-md text-sm text-[#faf9f5] transition-all duration-200 ease-in-out overflow-hidden hover:bg-white/5"
                 >
                     Preview →
-                </button>
+                </button> */}
+                <Button className="bg-white text-black hover:bg-white/90 text-sm h-8 px-3 rounded-md font-medium">
+                    Get Started
+                </Button>
+
             </div>
 
             <div className="hidden md:flex w-full bg-[#000000] h-12.5 items-center px-4" >

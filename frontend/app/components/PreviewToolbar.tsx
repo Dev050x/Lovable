@@ -42,6 +42,7 @@ export function PreviewToolbar({ onPreview, onCode, onBack, url }: { onPreview: 
 
     return (
         <div className="relative flex w-full items-center pr-2 justify-between h-10">
+            {/* preview and code button */}
             <div className="flex items-center gap-1">
                 {onBack && (
                     <button
@@ -55,31 +56,27 @@ export function PreviewToolbar({ onPreview, onCode, onBack, url }: { onPreview: 
                 {btn('code', <Code2 size={14} />, 'Code')}
             </div>
 
-
-            <div className="flex items-center gap-1 border-[0.5px] border-[#908F8E] rounded-md h-7.5 px-2 w-[220px]">
-                {/* Laptop icon + path */}
+            {/* navigtaion ui for external tab */}
+            <div className="hidden md:flex items-center gap-1 border-[0.5px] border-[#faf9f5] rounded-md h-7.5 px-2 w-[220px]">
                 <div className="flex items-center gap-1 flex-1 min-w-0">
-                    <LaptopMinimal size={12} className="text-[#faf9f5]/70 flex-shrink-0" />
-                    <span className="text-[#faf9f5]/50 text-xs">/</span>
+                    <LaptopMinimal size={12} className="text-[#faf9f5] flex-shrink-0" />
+                    <span className="text-[#faf9f5] text-xs">/</span>
                     <input
                         type="text"
                         readOnly
                         className="bg-transparent text-[#faf9f5] text-xs outline-none w-full min-w-0 caret-[#2d5ff5]"
                     />
-                </div>
-
-                {/* Actions */}
+                </div>                
                 <div className="flex items-center gap-0.5 flex-shrink-0">
                     <button className="h-5 w-5 flex items-center justify-center rounded hover:bg-white/10 transition-colors" disabled={!url} onClick={() => window.open(url!, "_blank")}>
-                        <ExternalLink size={12} className="text-[#faf9f5]/70" />
+                        <ExternalLink size={12} className="text-[#faf9f5]
+                        " />
                     </button>
-                    <button className="h-5 w-5 flex items-center justify-center rounded hover:bg-white/10 transition-colors">
-                        <RotateCw size={12} className="text-[#faf9f5]/70" />
-                    </button>
+                    
                 </div>
             </div>
 
-
+            {/* button for authentication */}
             <button className="h-7 w-7 flex items-center justify-center rounded-md text-[#faf9f5] hover:bg-white/5">
                 <SignedOut>
                     <SignInButton mode="modal">
