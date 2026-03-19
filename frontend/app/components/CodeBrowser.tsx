@@ -20,14 +20,14 @@ interface CodeBrowserProps {
   projectId: string;
 }
 
-const BG       = "#0A0A0A";
-const BORDER   = "#1a1a1a";
-const TEXT     = "#cccccc";
-const TEXT_DIM = "#555555";
+const BG = "#0A0A0A";
+const BORDER = "#2E2E2E";
+const TEXT = "#cccccc";
+const TEXT_DIM = "#999999";
 const HOVER_BG = "#111111";
-const ACTIVE_BG= "#141414";
+const ACTIVE_BG = "#141414";
 
-const IGNORE = new Set(["node_modules", ".next", ".npm", ".config", "public"]);
+const IGNORE = new Set(["node_modules", ".next", ".npm", ".config", "public", "fonts", "api"]);
 
 function buildTree(files: { path: string; type: string }[]): FileNode[] {
   const root: FileNode[] = [];
@@ -58,19 +58,13 @@ function getLanguage(filename: string): string {
 
 function FolderIcon({ open }: { open: boolean }) {
   return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
-      <path d={open ? "M1.5 5h4.5l1.5 1.5H14.5V13H1.5V5z" : "M1.5 4.5h4l1.5 1.5H14.5V13H1.5V4.5z"} stroke="#666" strokeWidth="1" fill="none" />
-      {open && <path d="M1.5 7h13" stroke="#555" strokeWidth="0.75" />}
-    </svg>
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-folder-closed-icon lucide-folder-closed"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" /><path d="M2 10h20" /></svg>
   );
 }
 
 function FileIconSimple() {
   return (
-    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
-      <path d="M4 1.5h6L13 5V14.5H4V1.5z" stroke="#555" strokeWidth="1" fill="none" />
-      <path d="M10 1.5V5H13" stroke="#555" strokeWidth="1" fill="none" />
-    </svg>
+    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-file-icon lucide-file"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/></svg>
   );
 }
 
@@ -107,7 +101,7 @@ function FileTreeNode({ node, depth, activeTab, expanded, onFileClick, onToggleD
         }}
       >
         {isDir ? (<><Chevron open={isExpanded} /><FolderIcon open={isExpanded} /></>) : (<><div style={{ width: "9px" }} /><FileIconSimple /></>)}
-        <span style={{ fontSize: "13px", color: isActive ? "#d4d4d4" : TEXT, fontFamily: "ui-monospace, 'Cascadia Code', Consolas, monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <span style={{ fontSize: "13px", color: isActive ? "#d4d4d4" : TEXT, fontFamily: "sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {node.name}
         </span>
       </div>
@@ -207,10 +201,10 @@ export default function CodeBrowser({ projectId }: CodeBrowserProps) {
 
   const Sidebar = (
     <div style={{ display: "flex", flexDirection: "column", backgroundColor: BG, borderRight: `1px solid ${BORDER}`, overflow: "hidden", height: "100%" }}>
-      <div style={{ padding: "9px 12px 7px", fontSize: "11px", color: TEXT_DIM, textTransform: "uppercase", letterSpacing: "0.1em", borderBottom: `1px solid ${BORDER}` }}>
+      <div style={{ padding: "9px 12px 7px", fontSize: "11px", color: TEXT, textTransform: "uppercase", letterSpacing: "0.1em", borderBottom: `1px solid ${BORDER}`, height: "36px" }}>
         Explorer
       </div>
-      <div style={{ flex: 1, overflowY: "auto", paddingTop: "3px", scrollbarWidth: "thin", scrollbarColor: "#1a1a1a transparent" }}>
+      <div style={{ flex: 1, overflowY: "auto", paddingTop: "3px", scrollbarWidth: "thin", scrollbarColor: "2B3238 transparent" }}>
         {treeLoading ? (
           <div style={{ padding: "10px 12px", display: "flex", flexDirection: "column", gap: "7px" }}>
             {[...Array(10)].map((_, i) => (
@@ -239,7 +233,7 @@ export default function CodeBrowser({ projectId }: CodeBrowserProps) {
       <div className="flex items-center gap-2 md:hidden px-3 py-2" style={{ borderBottom: `1px solid ${BORDER}`, backgroundColor: BG }}>
         <button
           onClick={() => setMobileView("tree")}
-          className="text-xs px-2 py-1 rounded border text-[#cccccc] border-[#1a1a1a] hover:bg-[#111111]"
+          className="text-xs px-2 py-1 rounded border text-[#cccccc] border-[#2B3238] hover:bg-[#111111]"
         >
           ← Files
         </button>
@@ -251,7 +245,7 @@ export default function CodeBrowser({ projectId }: CodeBrowserProps) {
       {/* Tabs — desktop only */}
       <div className="hidden md:flex" style={{ alignItems: "flex-end", height: "36px", borderBottom: `1px solid ${BORDER}`, backgroundColor: BG, overflowX: "auto", flexShrink: 0, scrollbarWidth: "none" }}>
         {tabs.length === 0 ? (
-          <span style={{ padding: "0 12px", fontSize: "12px", color: TEXT_DIM, lineHeight: "36px" }}>No files open</span>
+          <span style={{ padding: "0 12px", fontSize: "12px", color: TEXT, lineHeight: "36px" }}>No files open</span>
         ) : tabs.map(tab => {
           const isActive = activeTab === tab.path;
           const name = tab.path.split("/").pop() ?? "";
@@ -262,11 +256,9 @@ export default function CodeBrowser({ projectId }: CodeBrowserProps) {
               onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.backgroundColor = "transparent"; }}
             >
               <FileIconSimple />
-              <span style={{ fontSize: "12px", color: isActive ? "#d4d4d4" : "#666", whiteSpace: "nowrap" }}>{name}</span>
+              <span style={{ fontSize: "12px", color: isActive ? "#cccccc" : "#999999", whiteSpace: "nowrap" }}>{name}</span>
               <span onClick={e => closeTab(e, tab.path)}
-                style={{ fontSize: "12px", color: "#333", marginLeft: "2px", lineHeight: 1, cursor: "pointer" }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#999"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#333"; }}
+                style={{ fontSize: "12px", color: "#dbd7d7", marginLeft: "2px", lineHeight: 1, cursor: "pointer" }}
               >×</span>
             </div>
           );
@@ -279,7 +271,7 @@ export default function CodeBrowser({ projectId }: CodeBrowserProps) {
           {breadcrumb.map((part, i) => (
             <span key={i} style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               {i > 0 && <span style={{ color: TEXT_DIM, fontSize: "10px" }}>›</span>}
-              <span style={{ fontSize: "11px", color: i === breadcrumb.length - 1 ? "#888" : TEXT_DIM }}>{part}</span>
+              <span style={{ fontSize: "11px", color: i === breadcrumb.length - 1 ? "#cccccc" : "#999999" }}>{part}</span>
             </span>
           ))}
         </div>
@@ -297,8 +289,8 @@ export default function CodeBrowser({ projectId }: CodeBrowserProps) {
             height="100%"
             path={activeFile.path}
             language={getLanguage(activeFile.path)}
-            value={activeFile.content}
-            options={{ readOnly: true, minimap: { enabled: true }, fontSize: 13, lineHeight: 21, fontFamily: "ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, monospace", fontLigatures: true, scrollBeyondLastLine: false, wordWrap: "on", padding: { top: 12 }, renderLineHighlight: "line", smoothScrolling: true, bracketPairColorization: { enabled: true } }}
+            value={activeFile.content}  
+            options={{ readOnly: true, minimap: { enabled: true }, fontSize: 13, lineHeight: 21, fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace", fontLigatures: true, scrollBeyondLastLine: false, wordWrap: "on", padding: { top: 12 }, renderLineHighlight: "line", smoothScrolling: true, bracketPairColorization: { enabled: true } }}
             beforeMount={monaco => {
               monaco.editor.defineTheme("screenshot-dark", {
                 base: "vs-dark", inherit: true,
@@ -311,7 +303,7 @@ export default function CodeBrowser({ projectId }: CodeBrowserProps) {
                   { token: "storage.modifier", foreground: "569CD6" },
                   { token: "string", foreground: "CE9178" },
                   { token: "string.escape", foreground: "D7BA7D" },
-                  { token: "number", foreground: "B5CEA8" },
+                  { token: "number", foreground: "2B3238" },
                   { token: "constant.language", foreground: "569CD6" },
                   { token: "type", foreground: "4EC9B0" },
                   { token: "entity.name.type", foreground: "4EC9B0" },
@@ -331,12 +323,12 @@ export default function CodeBrowser({ projectId }: CodeBrowserProps) {
                 ],
                 colors: {
                   "editor.background": "#0A0A0A", "editor.foreground": "#D4D4D4",
-                  "editor.lineHighlightBackground": "#111111", "editor.selectionBackground": "#264F78",
-                  "editor.inactiveSelectionBackground": "#1a1a1a", "editorLineNumber.foreground": "#333333",
-                  "editorLineNumber.activeForeground": "#666666", "editorCursor.foreground": "#AEAFAD",
-                  "editorWhitespace.foreground": "#1a1a1a", "editorIndentGuide.background1": "#1a1a1a",
+                  "editor.lineHighlightBackground": "#2B3238", "editor.selectionBackground": "#264F78",
+                  "editor.inactiveSelectionBackground": "#2B3238", "editorLineNumber.foreground": "#2B3238",
+                  "editorLineNumber.activeForeground": "#2B3238", "editorCursor.foreground": "#AEAFAD",
+                  "editorWhitespace.foreground": "#2B3238", "editorIndentGuide.background1": "#2B3238",
                   "editorIndentGuide.activeBackground1": "#2a2a2a", "editorBracketMatch.background": "#0a0a0a",
-                  "editorBracketMatch.border": "#444", "scrollbarSlider.background": "#1a1a1a",
+                  "editorBracketMatch.border": "#444", "scrollbarSlider.background": "#2B3238",
                   "scrollbarSlider.hoverBackground": "#252525", "minimap.background": "#0A0A0A",
                   "editorGutter.background": "#0A0A0A",
                 },
@@ -353,8 +345,8 @@ export default function CodeBrowser({ projectId }: CodeBrowserProps) {
 
       {/* Status bar */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 12px", height: "20px", borderTop: `1px solid ${BORDER}`, backgroundColor: BG, flexShrink: 0 }}>
-        <span style={{ fontSize: "10px", color: TEXT_DIM }}>{activeFile?.path.replace("/home/user/", "") ?? ""}</span>
-        {activeFile && <span style={{ fontSize: "10px", color: TEXT_DIM }}>{getLanguage(activeFile.path)}</span>}
+        <span style={{ fontSize: "10px", color: TEXT }}>{activeFile?.path.replace("/home/user/", "") ?? ""}</span>
+        {activeFile && <span style={{ fontSize: "10px", color: TEXT }}>{getLanguage(activeFile.path)}</span>}
       </div>
     </div>
   );
@@ -371,10 +363,10 @@ export default function CodeBrowser({ projectId }: CodeBrowserProps) {
       </div>
 
       {/* DESKTOP */}
-      <div className="hidden md:flex h-full" style={{ overflow: "hidden", backgroundColor: BG, fontFamily: "ui-monospace, 'Cascadia Code', Consolas, monospace" }}>
+      <div className="hidden md:flex h-full" style={{ overflow: "hidden", backgroundColor: BG, fontFamily: "sans-serif" }}>
         <div style={{ width: sidebarWidth, flexShrink: 0 }}>{Sidebar}</div>
         <div onMouseDown={() => { dragging.current = true; }}
-          style={{ width: "1px", flexShrink: 0, cursor: "col-resize", backgroundColor: BORDER }}
+          style={{ flexShrink: 0, cursor: "col-resize", backgroundColor: BORDER }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = "#333"; }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = BORDER; }}
         />
