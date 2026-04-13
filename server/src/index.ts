@@ -17,7 +17,10 @@ const PORT = 8080;
 
 app.use("/api", aiRouter);
 app.use("/api", authRouter);
+app.get("/health", (req, res) => {
+    res.status(200).json({ message: "Server is healthy" });
+});
 
 app.listen(PORT, () => {
     console.log(`Server is listening on Port ${PORT}`);
-})
+});
