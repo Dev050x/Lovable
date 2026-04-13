@@ -17,7 +17,7 @@ const PORT = 8080;
 
 app.use("/api", aiRouter);
 app.use("/api", authRouter);
-app.get("/health", (req, res) => {
+app.get("/api/health", (req, res) => {
     res.status(200).json({ message: "Server is healthy" });
 });
 
