@@ -11,15 +11,17 @@ app.use(cors({
     allowedHeaders: ["Authorization", "Content-Type"],
 }));
 app.use(express.json());
+
+app.get("/api/health", (req, res) => {
+    res.status(200).json({ message: "Server is healthy" });
+});
+
 app.use(clerkAuth);
 
 const PORT = 8080;
 
 app.use("/api", aiRouter);
 app.use("/api", authRouter);
-app.get("/api/health", (req, res) => {
-    res.status(200).json({ message: "Server is healthy" });
-});
 
 app.listen(PORT, () => {
     console.log(`Server is listening on Port ${PORT}`);
