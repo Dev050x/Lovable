@@ -32,6 +32,11 @@ export default function Home() {
 
   return (
     <div className="flex flex-col bg-[#000000]" style={{ height: "100dvh" }}>
+      <div style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', opacity: 0 }}>
+        AI project builder, alternative to Lovable AI, Claude AI tools,
+        deep learning project generator, machine learning app builder,
+        React development with AI, Docker project setup with AI
+      </div>
       <div>
         <NavBar />
       </div>
