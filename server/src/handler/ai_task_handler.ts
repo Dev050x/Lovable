@@ -12,362 +12,418 @@ import { getFileData, getFiles } from "../utils/sandbox_files.js";
 import { getAuth } from "@clerk/express";
 
 export const create_project = async (req: Request, res: Response) => {
-    const { userId } = await getAuth(req);
+    try {
+        const { userId } = await getAuth(req);
+        
+        const validatedData = promptSchema.safeParse(req.body);
+        if (!validatedData.success) {
+            return res.status(400).json({
+                success: false,
+                error: "Invalid Request Body"
+            })
+        };
     
-    const validatedData = promptSchema.safeParse(req.body);
-    if (!validatedData.success) {
-        return res.status(400).json({
-            success: false,
-            error: "Invalid Request Body"
-        })
-    };
-
-    const { prompt } = validatedData.data;
-
-    const sandbox = await Sandbox.create('nextjs-app');
-
-    const { text } = await generateText({
-        model: groq("openai/gpt-oss-120b"),
-        messages: [
-            { role: "system", content: "Just Give Me Suitable Simple(Not-Fancy) Project name nothing else and make it short" },
-            { role: "user", content: prompt }
-        ]
-    });
-    const user = await prisma.user.findUnique({
-        where: {
-            clerkId: userId!,
-        }
-    });
-
-    const project = await prisma.project.create({
-        data: {
-            title: text,
-            SandboxId: sandbox.sandboxId,
-            Files: {},
-            userId: user?.id!,
-        }
-    });
-
-    const chat = await prisma.conversationHistory.create({
-        data: {
+        const { prompt } = validatedData.data;
+    
+        const sandbox = await Sandbox.create('nextjs-app');
+    
+        const { text } = await generateText({
+            model: groq("openai/gpt-oss-120b"),
+            messages: [
+                { role: "system", content: "Just Give Me Suitable Simple(Not-Fancy) Project name nothing else and make it short" },
+                { role: "user", content: prompt }
+            ]
+        });
+        const user = await prisma.user.findUnique({
+            where: {
+                clerkId: userId!,
+            }
+        });
+    
+        const project = await prisma.project.create({
+            data: {
+                title: text,
+                SandboxId: sandbox.sandboxId,
+                Files: {},
+                userId: user?.id!,
+            }
+        });
+    
+        const chat = await prisma.conversationHistory.create({
+            data: {
+                projectId: project.id,
+                content: prompt,
+                from: MessageFrom.USER,
+                type: ConversationType.TEXT_MESSAGE,
+            }
+        });
+    
+        res.status(200).json({
             projectId: project.id,
-            content: prompt,
-            from: MessageFrom.USER,
-            type: ConversationType.TEXT_MESSAGE,
-        }
-    });
-
-    res.status(200).json({
-        projectId: project.id,
-        chatId: chat.id,
-    });
+            chatId: chat.id,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: "Internal Server Error",
+            details: error,
+        });
+    }
 
 }
 
 
 export const generateProject = async (req: Request, res: Response) => {
 
-    const validatedData = generateSchema.safeParse(req.body);
-
-    if (!validatedData.success) {
-        return res.status(400).json({
-            success: false,
-            error: "Invalid Request Body"
-        })
-    };
-
-    const { projectId, chatId } = validatedData.data;
-
-    const project = await prisma.project.findUnique({
-        where: {
-            id: projectId,
-        }
-    });
-
-    const chat = await prisma.conversationHistory.findUnique({
-        where: {
-            id: chatId,
-        }
-    });
-
-    if (!project || !chat) {
-        return res.status(404).json({
-            success: false,
-            error: "Project Not Found"
-        })
-    };
-
-    const sandbox = await Sandbox.connect(project.SandboxId);
-    const host = sandbox.getHost(3000);
-    const url = `https://${host}`;
-
-    const { textStream } = streamText({
-        model: groq("openai/gpt-oss-120b"),
-
-        messages: [
-            { role: "system", content: SYSTEM_PROMPT },
-            { role: "user", content: chat.content },
-        ],
-
-        tools: {
-            createFile: createFile(sandbox),
-            updateFile: updateFile(sandbox),
-            deleteFile: deleteFile(sandbox),
-            readFile: readFile(sandbox),
-        },
-
-        stopWhen: stepCountIs(10),
-
-        onFinish: async ({ steps }) => {
-            await prisma.project.update({
-                where: { id: projectId },
-                data: { status: ProjectStatus.READY }
-            });
-
-            for (const step of steps) {
-                if (step.text) {
-                    await prisma.conversationHistory.create({
-                        data: {
-                            projectId: projectId,
-                            content: step.text,
-                            from: MessageFrom.ASSISTANT,
-                            type: ConversationType.TEXT_MESSAGE,
-                        }
-                    })
+    try {
+        const validatedData = generateSchema.safeParse(req.body);
+    
+        if (!validatedData.success) {
+            return res.status(400).json({
+                success: false,
+                error: "Invalid Request Body"
+            })
+        };
+    
+        const { projectId, chatId } = validatedData.data;
+    
+        const project = await prisma.project.findUnique({
+            where: {
+                id: projectId,
+            }
+        });
+    
+        const chat = await prisma.conversationHistory.findUnique({
+            where: {
+                id: chatId,
+            }
+        });
+    
+        if (!project || !chat) {
+            return res.status(404).json({
+                success: false,
+                error: "Project Not Found"
+            })
+        };
+    
+        const sandbox = await Sandbox.connect(project.SandboxId);
+        const host = sandbox.getHost(3000);
+        const url = `https://${host}`;
+    
+        const { textStream } = streamText({
+            model: groq("openai/gpt-oss-120b"),
+    
+            messages: [
+                { role: "system", content: SYSTEM_PROMPT },
+                { role: "user", content: chat.content },
+            ],
+    
+            tools: {
+                createFile: createFile(sandbox),
+                updateFile: updateFile(sandbox),
+                deleteFile: deleteFile(sandbox),
+                readFile: readFile(sandbox),
+            },
+    
+            stopWhen: stepCountIs(10),
+    
+            onFinish: async ({ steps }) => {
+                await prisma.project.update({
+                    where: { id: projectId },
+                    data: { status: ProjectStatus.READY }
+                });
+    
+                for (const step of steps) {
+                    if (step.text) {
+                        await prisma.conversationHistory.create({
+                            data: {
+                                projectId: projectId,
+                                content: step.text,
+                                from: MessageFrom.ASSISTANT,
+                                type: ConversationType.TEXT_MESSAGE,
+                            }
+                        })
+                    }
                 }
             }
+    
+        });
+    
+        for await (const chunk of textStream) {
+    
         }
-
-    });
-
-    for await (const chunk of textStream) {
-
+    
+        res.status(200).json({
+            url: url
+        })
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: "Internal Server Error",
+            details: error,
+        });
     }
-
-    res.status(200).json({
-        url: url
-    })
 
 }
 
 export const updateProject = async (req: Request, res: Response) => {
-    const validatedData = updateProjectSchema.safeParse(req.body);
-
-    if (!validatedData.success) {
-        return res.status(400).json({
-            success: false,
-            error: "Invalid Request Body"
-        })
-    };
-
-    const { projectId, prompt } = validatedData.data;
-
-    const project = await prisma.project.findUnique({
-        where: {
-            id: projectId,
-        }
-    });
-
-    await prisma.project.update({
-        where: {
-            id: projectId
-        },
-        data: {
-            status: ProjectStatus.UPDATING
-        }
-    });
-
-    if (!project) {
-        return res.status(404).json({
-            success: false,
-            error: "Project Not Found"
-        })
-    };
-
-    const chat = await prisma.conversationHistory.create({
-        data: {
-            projectId: projectId,
-            content: prompt,
-            from: MessageFrom.USER,
-            type: ConversationType.TEXT_MESSAGE,
-        }
-    });
-
-    const sandbox = await Sandbox.connect(project.SandboxId);
-    const host = sandbox.getHost(3000);
-    const url = `https://${host}`;
-
-    const { textStream } = streamText({
-        model: groq("openai/gpt-oss-120b"),
-
-        messages: [
-            { role: "system", content: SYSTEM_PROMPT },
-            { role: "user", content: prompt },
-        ],
-
-        tools: {
-            createFile: createFile(sandbox),
-            updateFile: updateFile(sandbox),
-            deleteFile: deleteFile(sandbox),
-            readFile: readFile(sandbox),
-        },
-
-        stopWhen: stepCountIs(10),
-
-        onFinish: async ({ steps }) => {
-            await prisma.project.update({
-                where: { id: projectId },
-                data: { status: ProjectStatus.READY }
-            });
-
-            for (const step of steps) {
-                if (step.text) {
-                    await prisma.conversationHistory.create({
-                        data: {
-                            projectId: projectId,
-                            content: step.text,
-                            from: MessageFrom.ASSISTANT,
-                            type: ConversationType.TEXT_MESSAGE,
-                        }
-                    })
+    try {
+        const validatedData = updateProjectSchema.safeParse(req.body);
+    
+        if (!validatedData.success) {
+            return res.status(400).json({
+                success: false,
+                error: "Invalid Request Body"
+            })
+        };
+    
+        const { projectId, prompt } = validatedData.data;
+    
+        const project = await prisma.project.findUnique({
+            where: {
+                id: projectId,
+            }
+        });
+    
+        await prisma.project.update({
+            where: {
+                id: projectId
+            },
+            data: {
+                status: ProjectStatus.UPDATING
+            }
+        });
+    
+        if (!project) {
+            return res.status(404).json({
+                success: false,
+                error: "Project Not Found"
+            })
+        };
+    
+        const chat = await prisma.conversationHistory.create({
+            data: {
+                projectId: projectId,
+                content: prompt,
+                from: MessageFrom.USER,
+                type: ConversationType.TEXT_MESSAGE,
+            }
+        });
+    
+        const sandbox = await Sandbox.connect(project.SandboxId);
+        const host = sandbox.getHost(3000);
+        const url = `https://${host}`;
+    
+        const { textStream } = streamText({
+            model: groq("openai/gpt-oss-120b"),
+    
+            messages: [
+                { role: "system", content: SYSTEM_PROMPT },
+                { role: "user", content: prompt },
+            ],
+    
+            tools: {
+                createFile: createFile(sandbox),
+                updateFile: updateFile(sandbox),
+                deleteFile: deleteFile(sandbox),
+                readFile: readFile(sandbox),
+            },
+    
+            stopWhen: stepCountIs(10),
+    
+            onFinish: async ({ steps }) => {
+                await prisma.project.update({
+                    where: { id: projectId },
+                    data: { status: ProjectStatus.READY }
+                });
+    
+                for (const step of steps) {
+                    if (step.text) {
+                        await prisma.conversationHistory.create({
+                            data: {
+                                projectId: projectId,
+                                content: step.text,
+                                from: MessageFrom.ASSISTANT,
+                                type: ConversationType.TEXT_MESSAGE,
+                            }
+                        })
+                    }
                 }
             }
+    
+        });
+    
+        for await (const chunk of textStream) {
+    
         }
-
-    });
-
-    for await (const chunk of textStream) {
-
+    
+        res.status(200).json({
+            url: url
+        })
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: "Internal Server Error",
+            details: error,
+        });
     }
-
-    res.status(200).json({
-        url: url
-    })
 
 }
 
 export const getAllchats = async (req: Request, res: Response) => {
-    const validatedData = projectIdSchema.safeParse(req.query);
-
-    if (!validatedData.success) {
-        return res.status(400).json({
+    try {
+        const validatedData = projectIdSchema.safeParse(req.query);
+    
+        if (!validatedData.success) {
+            return res.status(400).json({
+                success: false,
+                error: "Invalid Request Body"
+            })
+        }
+    
+        const { projectId } = validatedData.data;
+    
+        const project = await prisma.project.findUnique({
+            where: { id: projectId },
+            include: { conversationHistory: { orderBy: { createdAt: "asc" } } }
+        });
+        console.log("projects is: ", project?.conversationHistory);
+    
+        return res.json({
+            converSationHistory: project?.conversationHistory,
+            projectStatus: project?.status,
+            chatId: project?.conversationHistory[0]?.id,
+        });
+    } catch (error) {
+        res.status(500).json({
             success: false,
-            error: "Invalid Request Body"
-        })
+            error: "Internal Server Error",
+            details: error,
+        });
     }
-
-    const { projectId } = validatedData.data;
-
-    const project = await prisma.project.findUnique({
-        where: { id: projectId },
-        include: { conversationHistory: { orderBy: { createdAt: "asc" } } }
-    });
-    console.log("projects is: ", project?.conversationHistory);
-
-    return res.json({
-        converSationHistory: project?.conversationHistory,
-        projectStatus: project?.status,
-        chatId: project?.conversationHistory[0]?.id,
-    });
 }
 
 export const getProjectUrl = async (req: Request, res: Response) => {
-    console.log("params: ", req.params.projectId);
-    const validatedData = projectIdSchema.safeParse(req.query);
-
-    if (!validatedData.success) {
-        return res.status(400).json({
-            success: false,
-            error: "Invalid Request Body"
-        })
-    }
-
-    const { projectId } = validatedData.data;
-
-    const project = await prisma.project.findUnique({
-        where: {
-            id: projectId
+    try {
+        console.log("params: ", req.params.projectId);
+        const validatedData = projectIdSchema.safeParse(req.query);
+    
+        if (!validatedData.success) {
+            return res.status(400).json({
+                success: false,
+                error: "Invalid Request Body"
+            })
         }
-    });
-
-    const url = `https://3000-${project?.SandboxId}.e2b.app`;
-
-    return res.json({
-        url,
-    });
+    
+        const { projectId } = validatedData.data;
+    
+        const project = await prisma.project.findUnique({
+            where: {
+                id: projectId
+            }
+        });
+    
+        const url = `https://3000-${project?.SandboxId}.e2b.app`;
+    
+        return res.json({
+            url,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: "Internal Server Error",
+            details: error,
+        });
+    }
 
 }
 
 
 export const getAllFiles = async (req: Request, res: Response) => {
-    console.log("request is received");
-    console.log("request parama: ", req.query);
-    const validatedData = projectIdSchema.safeParse(req.query);
-    console.log("validated Data: ", validatedData);
-
-    if (!validatedData.success) {
-        return res.status(400).json({
+    try {
+        console.log("request is received");
+        console.log("request parama: ", req.query);
+        const validatedData = projectIdSchema.safeParse(req.query);
+        console.log("validated Data: ", validatedData);
+    
+        if (!validatedData.success) {
+            return res.status(400).json({
+                success: false,
+                error: "Invalid Request Body"
+            })
+        };
+    
+        const { projectId } = validatedData.data;
+        console.log("projectId is: ", projectId);
+    
+        const project = await prisma.project.findUnique({
+            where: {
+                id: projectId
+            }
+        });
+        if (!project) {
+            return res.status(404).json({
+                success: false,
+                error: "Project Not Found"
+            })
+        };
+    
+        const sandbox = await Sandbox.connect(project.SandboxId);
+        const files = await getFiles(sandbox);
+        console.log("files are: ", files);
+        return res.json({
+            files
+        });
+    } catch (error) {
+        res.status(500).json({
             success: false,
-            error: "Invalid Request Body"
-        })
-    };
-
-    const { projectId } = validatedData.data;
-    console.log("projectId is: ", projectId);
-
-    const project = await prisma.project.findUnique({
-        where: {
-            id: projectId
-        }
-    });
-    if (!project) {
-        return res.status(404).json({
-            success: false,
-            error: "Project Not Found"
-        })
-    };
-
-    const sandbox = await Sandbox.connect(project.SandboxId);
-    const files = await getFiles(sandbox);
-    console.log("files are: ", files);
-    return res.json({
-        files
-    });
+            error: "Internal Server Error",
+            details: error,
+        });
+    }
 }
 
 
 export const getFileContent = async (req: Request, res: Response) => {
-    console.log("request data", req.query);
-    const validatedData = fileContentSchema.safeParse(req.query);
-
-    if (!validatedData.success) {
-        return res.status(400).json({
-            success: false,
-            error: "Invalid Request Body"
+    try {
+        console.log("request data", req.query);
+        const validatedData = fileContentSchema.safeParse(req.query);
+    
+        if (!validatedData.success) {
+            return res.status(400).json({
+                success: false,
+                error: "Invalid Request Body"
+            })
+        };
+    
+        const { projectId, path } = validatedData.data;
+    
+        const project = await prisma.project.findUnique({
+            where: {
+                id: projectId as string
+            }
+        });
+    
+        if (!project) {
+            return res.status(404).json({
+                success: false,
+                error: "Project Not Found"
+            })
+        };
+        const sandbox = await Sandbox.connect(project.SandboxId);
+    
+        const fileContent = await getFileData(sandbox, path as string);
+    
+        return res.json({
+            content: fileContent
         })
-    };
-
-    const { projectId, path } = validatedData.data;
-
-    const project = await prisma.project.findUnique({
-        where: {
-            id: projectId as string
-        }
-    });
-
-    if (!project) {
-        return res.status(404).json({
+    } catch (error) {
+        res.status(500).json({
             success: false,
-            error: "Project Not Found"
-        })
-    };
-    const sandbox = await Sandbox.connect(project.SandboxId);
-
-    const fileContent = await getFileData(sandbox, path as string);
-
-    return res.json({
-        content: fileContent
-    })
+            error: "Internal Server Error",
+            details: error,
+        });
+    }
 
 }
 
