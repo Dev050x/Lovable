@@ -1,6 +1,6 @@
 "use server"
 import { auth } from "@clerk/nextjs/server";
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const getAuthHeaders = async () => {
   const { getToken } = await auth();
@@ -19,7 +19,8 @@ export async function creatProject(prompt: string) {
     }),
     headers: await getAuthHeaders(),
   });
-  return response.json();
+
+  return await response.json();
 };
 
 
@@ -27,7 +28,7 @@ export async function getAllChats(id: string) {
   const response = await fetch(`${BASE_URL}/api/project/chats?projectId=${id}`, {
     headers: await getAuthHeaders(),
   });
-  return response.json();
+  return await response.json();
 }
 
 export async function generateProject(projectId: string, chatId: string) {
@@ -39,7 +40,7 @@ export async function generateProject(projectId: string, chatId: string) {
     }),
     headers: await getAuthHeaders(),
   });
-  return response.json();
+  return await response.json();
 };
 
 export async function updateProject(projectId: string, prompt: string) {
@@ -50,22 +51,23 @@ export async function updateProject(projectId: string, prompt: string) {
       prompt
     }),
     headers: await getAuthHeaders(),
-  })
-  return response.json();
+  });
+  
+  return await response.json();
 }
 
 export async function getProject(projectId: string) {
   const response = await fetch(`${BASE_URL}/api/project/?projectId=${projectId}`, {
     headers: await getAuthHeaders(),
   });
-  return response.json();
+  return await response.json();
 }
 
 export async function getAllFiles(projectId: string) {
   const response = await fetch(`${BASE_URL}/api/project/files?projectId=${projectId}`, {
     headers: await getAuthHeaders(),
   });
-  return response.json(); 
+  return await response.json();
 }
 
 export async function getFileContent(projectId: string, path: string) {
@@ -75,7 +77,7 @@ export async function getFileContent(projectId: string, path: string) {
       headers: await getAuthHeaders(),
     }
   );
-  return response.json();
+  return await response.json();
 }
 
 
@@ -84,5 +86,5 @@ export async function syncUserInfo(token: string, userId: string) {
     method: "POST",
     headers: await getAuthHeaders(),
   });
-  return response.json();
+  return await response.json();
 }
