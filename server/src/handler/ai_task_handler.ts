@@ -126,7 +126,7 @@ export const generateProject = async (req: Request, res: Response) => {
         const sandbox = await Sandbox.connect(project.SandboxId);
         const host = sandbox.getHost(3000);
         const url = `https://${host}`;
-        emit({ type: "url", url });
+        emit({ type: "url", url  });
 
         const result = await generateText({
             model: google("gemini-2.5-pro"),
