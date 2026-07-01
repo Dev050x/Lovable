@@ -39,7 +39,7 @@ export const create_project = async (req: Request, res: Response) => {
 
         const { text } = await generateText({
             // model: groq("openai/gpt-oss-120b"),
-            model: google("gemini-2.5-pro"),
+            model: google("gemini-3.5-flash"),
             system: "Just Give Me Suitable Simple(Not-Fancy) Project name nothing else and make it short",
             messages: [{ role: "user", content: prompt }],
         });
@@ -129,7 +129,7 @@ export const generateProject = async (req: Request, res: Response) => {
         emit({ type: "url", url  });
 
         const result = await generateText({
-            model: google("gemini-2.5-pro"),
+            model: google("gemini-3.5-flash"),
             system: SYSTEM_PROMPT,
             messages: [{ role: "user", content: chat.content }],
 
@@ -236,7 +236,7 @@ export const updateProject = async (req: Request, res: Response) => {
             emit({ type: "url", url });
 
             const result = await generateText({
-                model: google("gemini-2.5-pro"),
+                model: google("gemini-3.5-flash"),
                 system: SYSTEM_PROMPT,
                 messages: [{ role: "user", content: prompt }],
 
