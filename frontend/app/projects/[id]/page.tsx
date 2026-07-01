@@ -13,7 +13,7 @@ import { useProject } from "@/app/hooks/useProject";
 
 export default function Project() {
     const { id } = useParams();
-    const { chatHistory, url, input, setInput, isLoading, handleSubmit } = useProject(id as string);
+    const { chatHistory, url, input, setInput, isLoading, handleSubmit, pendingQuestion, handleAnswer } = useProject(id as string);
     const [preview, setPreview] = useState(true);
     const [mobileView, setMobileView] = useState<"chat" | "preview">("chat");
 
@@ -29,6 +29,8 @@ export default function Project() {
                         isLoading={isLoading}
                         onSubmit={handleSubmit}
                         onPreviewClick={() => setMobileView("preview")}
+                        pendingQuestion={pendingQuestion}
+                        onAnswer={handleAnswer}
                     />
                 ) : (
                     <div className="flex flex-col h-screen overflow-hidden">
@@ -42,7 +44,7 @@ export default function Project() {
                         </div>
                         <div className="flex-1 min-h-0 w-full">
                             {preview
-                                ? (url ? <iframe src={url} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" className="h-full w-full" /> : <div className="flex items-center justify-center font-bold h-full">Generating the content...</div>)
+                                ? (!isLoading && url ? <iframe src={url} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" className="h-full w-full" /> : <div className="flex items-center justify-center font-bold h-full">Generating the content...</div>)
                                 : (url ? <CodeBrowser projectId={id as string} /> : <div className="flex items-center justify-center font-bold h-full">Generating the content...</div>)
                             }
                         </div>
@@ -62,6 +64,8 @@ export default function Project() {
                         setInput={setInput}
                         isLoading={isLoading}
                         onSubmit={handleSubmit}
+                        pendingQuestion={pendingQuestion}
+                        onAnswer={handleAnswer}
                     />
                 </ResizablePanel>
                 <ResizableHandle withHandle />
@@ -72,7 +76,7 @@ export default function Project() {
                         </div>
                         <div className="flex-1 w-full min-h-0 border border-[#292929] rounded-[6px]">
                             {preview
-                                ? (url ? <iframe src={url} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" className="h-full w-full border border-[#292929] rounded-[6px]" /> :  <div className="flex items-center justify-center font-bold h-full">Generating the content...</div>)
+                                ? (!isLoading && url ? <iframe src={url} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" className="h-full w-full border border-[#292929] rounded-[6px]" /> :  <div className="flex items-center justify-center font-bold h-full">Generating the content...</div>)
                                 : (url ? <CodeBrowser projectId={id as string} /> : <div className="flex items-center justify-center font-bold h-full">Generating the content...</div>)
                             }
                         </div>

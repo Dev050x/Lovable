@@ -88,3 +88,12 @@ export async function syncUserInfo(token: string, userId: string) {
   });
   return await response.json();
 }
+
+export async function answerQuestion(questionId: string, answer: string) {
+  const response = await fetch(`${BASE_URL}/api/project/answer`, {
+    method: "POST",
+    body: JSON.stringify({ questionId, answer }),
+    headers: await getAuthHeaders(),
+  });
+  return await response.json();
+}
