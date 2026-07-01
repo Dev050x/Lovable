@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { create_project, generateProject, getAllchats, getAllFiles, getFileContent, getProjectUrl, updateProject, } from "../handler/ai_task_handler.js";
+import { answerQuestion, create_project, generateProject, getAllchats, getAllFiles, getFileContent, getProjectUrl, updateProject, } from "../handler/ai_task_handler.js";
 import { requireAuth } from "../middleware/auth.middleware.js";
 
 const aiRouter = Router();
@@ -11,5 +11,6 @@ aiRouter.get("/project/", getProjectUrl);       //get project url
 aiRouter.get("/project/chats", getAllchats);    //get chats
 aiRouter.get("/project/files", getAllFiles);    //get files 
 aiRouter.get("/project/file", getFileContent)   //get file content
+aiRouter.post("/project/answer", answerQuestion);
 
 export default aiRouter;

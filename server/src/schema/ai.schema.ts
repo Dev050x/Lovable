@@ -22,3 +22,8 @@ export const updateProjectSchema = z.object({
     projectId: z.string(),
     prompt: z.string(),
 })
+
+export const answerSchema = z.object({
+  questionId: z.string().uuid(),
+  answer: z.string().min(1, "Answer cannot be empty"),
+});
