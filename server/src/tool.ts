@@ -5,6 +5,7 @@ import { randomUUID } from "crypto";
 import type { SseEvent } from "./types/types.js";
 import { prisma } from "./utils/prisma.js";
 import { MessageFrom, ConversationType } from "@prisma/client";
+import { getFiles } from "./utils/sandbox_files.js";
 
 export const createFile = (sandbox: Sandbox) => ({
   description: "Create a file",
@@ -54,6 +55,15 @@ export const readFile = (sandbox: Sandbox) => ({
     const content = await sandbox.files.read(location);
     return content;
   },
+});
+
+export const listAllFiles = (sandbox: Sandbox) => ({
+  description: "list all files",
+  inputSchema: z.object({}),
+  execute: async () => {
+    const allFiles = await getFiles(sandbox);
+    return allFiles;
+  }
 });
 
 

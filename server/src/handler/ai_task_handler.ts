@@ -2,7 +2,7 @@ import "dotenv/config";
 import { type Request, type Response } from "express";
 import { generateText, stepCountIs, streamText } from "ai";
 import { SYSTEM_PROMPT } from "../system_prompt.js";
-import { askUser, createFile, deleteFile, readFile, updateFile } from "../tool.js";
+import { askUser, createFile, deleteFile, listAllFiles, readFile, updateFile } from "../tool.js";
 import { Sandbox } from "@e2b/code-interpreter";
 import {
     answerSchema,
@@ -35,11 +35,14 @@ export const create_project = async (req: Request, res: Response) => {
 
         const { prompt } = validatedData.data;
 
-        const sandbox = await Sandbox.create("nextjs-app");
+        const sandbox = await Sandbox.create("nextjs-app", {
+            timeoutMs: 5*1000*60,
+            
+        });
 
         const { text } = await generateText({
-            // model: groq("openai/gpt-oss-120b"),
-            model: google("gemini-3.5-flash"),
+            model: groq("openai/gpt-oss-120b"),
+            // model: google("gemini-3.5-flash"),
             system: "Just Give Me Suitable Simple(Not-Fancy) Project name nothing else and make it short",
             messages: [{ role: "user", content: prompt }],
         });
@@ -129,7 +132,8 @@ export const generateProject = async (req: Request, res: Response) => {
         emit({ type: "url", url  });
 
         const result = await generateText({
-            model: google("gemini-3.5-flash"),
+            // model: google("gemini-3.5-flash"),
+            model: groq("openai/gpt-oss-120b"),
             system: SYSTEM_PROMPT,
             messages: [{ role: "user", content: chat.content }],
 
@@ -139,9 +143,10 @@ export const generateProject = async (req: Request, res: Response) => {
                 deleteFile: deleteFile(sandbox),
                 readFile: readFile(sandbox),
                 askUser: askUser(emit, projectId),
+                listAllFiles: listAllFiles(sandbox),
             },
 
-            stopWhen: stepCountIs(10),
+            stopWhen: stepCountIs(40),
 
             onFinish: async ({ steps }) => {
                 await prisma.project.update({
@@ -236,7 +241,8 @@ export const updateProject = async (req: Request, res: Response) => {
             emit({ type: "url", url });
 
             const result = await generateText({
-                model: google("gemini-3.5-flash"),
+                // model: google("gemini-3.5-flash"),
+                model: groq("openai/gpt-oss-120b"),
                 system: SYSTEM_PROMPT,
                 messages: [{ role: "user", content: prompt }],
 
@@ -246,9 +252,10 @@ export const updateProject = async (req: Request, res: Response) => {
                     deleteFile: deleteFile(sandbox),
                     readFile: readFile(sandbox),
                     askUser: askUser(emit, projectId),
+                    listAllFiles: listAllFiles(sandbox),
                 },
 
-                stopWhen: stepCountIs(10),
+                stopWhen: stepCountIs(40),
 
                 onFinish: async ({ steps }) => {
                     await prisma.project.update({
