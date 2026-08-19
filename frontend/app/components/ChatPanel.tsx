@@ -1,6 +1,7 @@
 "use client"
 import InputField from "@/app/components/InputField";
 import FormattedMarkdown from "@/app/components/FormattedMarkdown";
+import LoadingState from "@/app/components/LoadingState";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
@@ -234,6 +235,12 @@ export default function ChatPanel({
                                     Submit
                                 </Button>
                             </div>
+                        </div>
+                    )}
+
+                    {isLoading && !pendingQuestion && (
+                        <div className="flex w-full justify-start py-1 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                            <LoadingState label="Crafting solution..." variant="Drive" />
                         </div>
                     )}
                 </div>

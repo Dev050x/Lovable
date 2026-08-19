@@ -157,3 +157,48 @@ body {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;     /* Firefox */
 }
+
+/* LoadingState Animation Keyframes */
+:root {
+  --ink: #ffffff;
+  --ink-3: #71717a;
+  --tooltip-bg: #18181b;
+  --tooltip-muted: #a1a1aa;
+}
+
+.bg-ink {
+  background-color: var(--ink);
+}
+
+.text-ink-3 {
+  color: var(--ink-3);
+}
+
+@keyframes pixel-on {
+  0%, 100% {
+    opacity: 0.15;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer-text {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
