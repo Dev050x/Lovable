@@ -7,48 +7,42 @@ import { prisma } from "./utils/prisma.js";
 import { MessageFrom, ConversationType } from "@prisma/client";
 import { getFiles } from "./utils/sandbox_files.js";
 
-export const createFile = (sandbox: Sandbox) => ({
-  description: "Create a file",
+export const writeFile = (sandbox: Sandbox) => ({
+  description:
+    "Create a new file or overwrite an existing file with complete content",
   inputSchema: z.object({
-    location: z.string(),
-    content: z.string(),
+    location: z.string().describe("Absolute file path"),
+    content: z.string().describe("Complete file content"),
   }),
-  execute: async ({ location, content }: { location: string; content: string }) => {
-    console.log(`[createFile] -> ${location}`);
+  execute: async ({
+    location,
+    content,
+  }: {
+    location: string;
+    content: string;
+  }) => {
+    console.log(`[writeFile] -> ${location}`);
     await sandbox.files.write(location, content);
-    return `File created at ${location}`;
-  },
-});
-
-export const updateFile = (sandbox: Sandbox) => ({
-  description: "Update a file",
-  inputSchema: z.object({
-    location: z.string(),
-    content: z.string(),
-  }),
-  execute: async ({ location, content }: { location: string; content: string }) => {
-    console.log(`[updateFile] -> ${location}`);
-    await sandbox.files.write(location, content);
-    return `File updated at ${location}`;
+    return `File written successfully at ${location}`;
   },
 });
 
 export const deleteFile = (sandbox: Sandbox) => ({
-  description: "Delete a file",
+  description: "Delete a file from the project",
   inputSchema: z.object({
-    location: z.string(),
+    location: z.string().describe("Absolute file path"),
   }),
   execute: async ({ location }: { location: string }) => {
     console.log(`[deleteFile] -> ${location}`);
     await sandbox.files.remove(location);
-    return `File deleted at ${location}`;
+    return `File deleted successfully at ${location}`;
   },
 });
 
 export const readFile = (sandbox: Sandbox) => ({
-  description: "Read a file",
+  description: "Read the complete contents of a file",
   inputSchema: z.object({
-    location: z.string(),
+    location: z.string().describe("Absolute file path"),
   }),
   execute: async ({ location }: { location: string }) => {
     console.log(`[readFile] -> ${location}`);
@@ -58,13 +52,40 @@ export const readFile = (sandbox: Sandbox) => ({
 });
 
 export const listAllFiles = (sandbox: Sandbox) => ({
-  description: "list all files",
+  description: "List all files and directories in the project",
   inputSchema: z.object({}),
   execute: async () => {
+    console.log("[listAllFiles]");
     const allFiles = await getFiles(sandbox);
     return allFiles;
-  }
+  },
 });
+
+export const searchFiles = (sandbox: Sandbox) => ({
+  description:
+    "Search project files for a text pattern. Use this to locate code, imports, components, functions, errors, or configuration before reading files.",
+  inputSchema: z.object({
+    query: z.string().describe("Text or pattern to search for"),
+    path: z.string().optional().describe("Directory or file to search inside"),
+  }),
+  execute: async ({ query, path }: { query: string; path?: string }) => {
+    const searchPath = path ?? "/home/user";
+    console.log(`[searchFiles] -> ${query} in ${searchPath}`);
+    try {
+      const result = await sandbox.commands.run(
+        `grep -RIn --exclude-dir=node_modules --exclude-dir=.next ${JSON.stringify(query)} ${JSON.stringify(searchPath)} 2>/dev/null | head -200`,
+        {
+          timeoutMs: 10000,
+        },
+      );
+      return result.stdout || "No matches found.";
+    } catch (error) {
+      console.error("[searchFiles] failed:", error);
+      return "No matches found.";
+    }
+  },
+});
+
 
 
 const askUserInputSchema = z.object({
@@ -133,4 +154,3 @@ export const askUser = (emit: (event: SseEvent) => void, projectId: string) => (
     return answer;
   },
 });
-
