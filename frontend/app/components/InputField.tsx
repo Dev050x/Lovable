@@ -4,14 +4,24 @@ import { ArrowUp, Loader, Plus } from "lucide-react";
 
 export default function InputField({ onButtonClick, input, setInput, isLoading }: { onButtonClick: () => void, input: string, setInput: React.Dispatch<React.SetStateAction<string>>, isLoading: boolean }) {
     const { isSignedIn } = useAuth();
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            if (!isLoading && input.trim()) {
+                onButtonClick();
+            }
+        }
+    };
+
     return (
         <div className="flex flex-col bg-[#121212] border border-[#2E2E2E] rounded-[10px] mx-auto w-full max-w-2xl mx-172.5 overflow-hidden shadow-2xl">
             <textarea
                 rows={1}
                 placeholder="Ask to Build....."
-                className="w-full bg-transparent text-white text-sm placeholder-[#A0A0A0] outline-none border-none resize-none px-4 pt-4 pb-4 overflow-y-scroll no-scrollbar   "
+                className="w-full bg-transparent text-white text-sm placeholder-[#A0A0A0] outline-none border-none resize-none px-4 pt-4 pb-4 overflow-y-scroll no-scrollbar"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
             />
             <div className="flex items-center justify-between px-3 pb-3 pt-1">
                 <div className="flex items-center gap-2">
