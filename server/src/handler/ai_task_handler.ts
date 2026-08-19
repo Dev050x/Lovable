@@ -2,7 +2,7 @@ import "dotenv/config";
 import { type Request, type Response } from "express";
 import { generateText, stepCountIs, streamText } from "ai";
 import { SYSTEM_PROMPT } from "../system_prompt.js";
-import { askUser, createFile, deleteFile, listAllFiles, readFile, updateFile } from "../tool.js";
+import { askUser, deleteFile, listAllFiles, readFile, searchFiles, writeFile } from "../tool.js";
 import { Sandbox } from "@e2b/code-interpreter";
 import {
     answerSchema,
@@ -16,8 +16,9 @@ import { groq } from "@ai-sdk/groq";
 import { prisma } from "../utils/prisma.js";
 import { ConversationType, MessageFrom, ProjectStatus } from "@prisma/client";
 import { getFileData, getFiles } from "../utils/sandbox_files.js";
-import { getAuth } from "@clerk/express";
+import { getAuth, clerkClient } from "@clerk/express";
 import { google } from "@ai-sdk/google";
+import { openai } from "@ai-sdk/openai";
 import type { SseEvent } from "../types/types.js";
 import { submitAnswer } from "../utils/peding_question.js";
 
@@ -41,23 +42,39 @@ export const create_project = async (req: Request, res: Response) => {
         });
 
         const { text } = await generateText({
-            model: groq("openai/gpt-oss-120b"),
+            model: openai("gpt-4o-mini"),
             // model: google("gemini-3.5-flash"),
+            // model: groq("openai/gpt-oss-120b"),
             system: "Just Give Me Suitable Simple(Not-Fancy) Project name nothing else and make it short",
             messages: [{ role: "user", content: prompt }],
         });
-        const user = await prisma.user.findUnique({
+        let user = await prisma.user.findUnique({
             where: {
                 clerkId: userId!,
             },
         });
+
+        if (!user) {
+            const clerkUser = await clerkClient.users.getUser(userId!);
+            const username =
+                clerkUser.username ||
+                clerkUser.emailAddresses[0]?.emailAddress.split("@")[0] ||
+                "user";
+
+            user = await prisma.user.create({
+                data: {
+                    clerkId: userId!,
+                    username,
+                },
+            });
+        }
 
         const project = await prisma.project.create({
             data: {
                 title: text,
                 SandboxId: sandbox.sandboxId,
                 Files: {},
-                userId: user?.id!,
+                userId: user.id,
             },
         });
 
@@ -75,10 +92,11 @@ export const create_project = async (req: Request, res: Response) => {
             chatId: chat.id,
         });
     } catch (error) {
+        console.error("Error in create_project:", error);
         res.status(500).json({
             success: false,
-            error: "Internal Server Error",
-            details: error,
+            error: error instanceof Error ? error.message : "Internal Server Error",
+            details: error instanceof Error ? error.stack : String(error),
         });
     }
 };
@@ -132,21 +150,22 @@ export const generateProject = async (req: Request, res: Response) => {
         emit({ type: "url", url  });
 
         const result = await generateText({
+            model: openai("gpt-4o-mini"),
             // model: google("gemini-3.5-flash"),
-            model: groq("openai/gpt-oss-120b"),
+            // model: groq("openai/gpt-oss-120b"),
             system: SYSTEM_PROMPT,
             messages: [{ role: "user", content: chat.content }],
 
             tools: {
-                createFile: createFile(sandbox),
-                updateFile: updateFile(sandbox),
+                writeFile: writeFile(sandbox),
                 deleteFile: deleteFile(sandbox),
                 readFile: readFile(sandbox),
+                searchFiles: searchFiles(sandbox),
                 askUser: askUser(emit, projectId),
                 listAllFiles: listAllFiles(sandbox),
             },
 
-            stopWhen: stepCountIs(40),
+            stopWhen: stepCountIs(15),
 
             onFinish: async ({ steps }) => {
                 await prisma.project.update({
@@ -241,21 +260,22 @@ export const updateProject = async (req: Request, res: Response) => {
             emit({ type: "url", url });
 
             const result = await generateText({
+                model: openai("gpt-4o-mini"),
                 // model: google("gemini-3.5-flash"),
-                model: groq("openai/gpt-oss-120b"),
+                // model: groq("openai/gpt-oss-120b"),
                 system: SYSTEM_PROMPT,
                 messages: [{ role: "user", content: prompt }],
 
                 tools: {
-                    createFile: createFile(sandbox),
-                    updateFile: updateFile(sandbox),
+                    writeFile: writeFile(sandbox),
                     deleteFile: deleteFile(sandbox),
                     readFile: readFile(sandbox),
+                    searchFiles: searchFiles(sandbox),
                     askUser: askUser(emit, projectId),
                     listAllFiles: listAllFiles(sandbox),
                 },
 
-                stopWhen: stepCountIs(40),
+                stopWhen: stepCountIs(15),
 
                 onFinish: async ({ steps }) => {
                     await prisma.project.update({
