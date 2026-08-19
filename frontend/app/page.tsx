@@ -22,9 +22,14 @@ export default function Home() {
       }
       setIsLoading(true);
       const result = await creatProject(input);
-      router.push(`/projects/${result.projectId}`);
+      if (result && result.projectId) {
+        router.push(`/projects/${result.projectId}`);
+      } else {
+        console.error("Failed to create project:", result?.error || result?.details || "Unknown error");
+        alert(result?.error || "Failed to create project. Please try again.");
+      }
     } catch (error) {
-      console.log("error", error);
+      console.log("error creating project", error);
     } finally {
       setIsLoading(false);
     }
