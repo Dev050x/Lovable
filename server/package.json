@@ -23,6 +23,7 @@
   "dependencies": {
     "@ai-sdk/google": "^4.0.3",
     "@ai-sdk/groq": "^4.0.2",
+    "@ai-sdk/openai": "^4.0.43",
     "@clerk/express": "^1.7.76",
     "@e2b/code-interpreter": "^2.3.3",
     "@prisma/adapter-pg": "^7.4.1",
