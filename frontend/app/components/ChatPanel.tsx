@@ -1,5 +1,6 @@
 "use client"
 import InputField from "@/app/components/InputField";
+import FormattedMarkdown from "@/app/components/FormattedMarkdown";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
@@ -135,7 +136,7 @@ export default function ChatPanel({
                                         ? "bg-[#18181B] border border-[#27272A] text-zinc-100" 
                                         : "bg-[#27272A] border border-[#3F3F46] text-white"
                                 }`}>
-                                    {item.content}
+                                    <FormattedMarkdown content={item.content} />
                                 </div>
                             </div>
                         );
