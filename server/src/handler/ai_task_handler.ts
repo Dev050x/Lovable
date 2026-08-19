@@ -14,7 +14,6 @@ import { Sandbox } from "@e2b/code-interpreter";
 import { runOrchestratorAgent } from "../agents/orchestrator.js";
 import { runParallelComponentBuilders } from "../agents/component_builder.js";
 import { runPageAssemblerAgent } from "../agents/page_assembler.js";
-import { runVerifierAgent } from "../agents/verifier.js";
 import {
   answerSchema,
   fileContentSchema,
@@ -161,23 +160,37 @@ export const generateProject = async (req: Request, res: Response) => {
     emit({ type: "url", url });
 
     // 1. Run Orchestrator Agent (Plan & Ask Questions if needed)
-    const plan = await runOrchestratorAgent(chat.content, sandbox, projectId, emit);
+    const plan = await runOrchestratorAgent(
+      chat.content,
+      sandbox,
+      projectId,
+      emit,
+    );
 
     // 2. Run Parallel Component Builder Sub-Agents (Write components in /home/user/components/ concurrently)
-    const componentsSummary = await runParallelComponentBuilders(plan, chat.content, sandbox);
+    const componentsSummary = await runParallelComponentBuilders(
+      plan,
+      chat.content,
+      sandbox,
+    );
 
     // 3. Run Page Assembler Sub-Agent (Assemble index.tsx from /home/user/components/)
-    const pageSummary = await runPageAssemblerAgent(plan, chat.content, sandbox);
-
-    // 4. Run Code Verifier & Self-Repair Agent (Check package.json & verify imports/exports)
-    const verifierSummary = await runVerifierAgent(plan, chat.content, sandbox);
+    const pageSummary = await runPageAssemblerAgent(
+      plan,
+      chat.content,
+      sandbox,
+    );
 
     await prisma.project.update({
       where: { id: projectId },
       data: { status: ProjectStatus.READY },
     });
 
-    const finalSummary = pageSummary || componentsSummary || plan || "Project components and page updated successfully.";
+    const finalSummary =
+      pageSummary ||
+      componentsSummary ||
+      plan ||
+      "Project components and page updated successfully.";
 
     await prisma.conversationHistory.create({
       data: {
@@ -264,20 +277,25 @@ export const updateProject = async (req: Request, res: Response) => {
       const plan = await runOrchestratorAgent(prompt, sandbox, projectId, emit);
 
       // 2. Run Parallel Component Builder Sub-Agents (Write components in /home/user/components/ concurrently)
-      const componentsSummary = await runParallelComponentBuilders(plan, prompt, sandbox);
+      const componentsSummary = await runParallelComponentBuilders(
+        plan,
+        prompt,
+        sandbox,
+      );
 
       // 3. Run Page Assembler Sub-Agent (Assemble index.tsx from /home/user/components/)
       const pageSummary = await runPageAssemblerAgent(plan, prompt, sandbox);
-
-      // 4. Run Code Verifier & Self-Repair Agent (Check package.json & verify imports/exports)
-      const verifierSummary = await runVerifierAgent(plan, prompt, sandbox);
 
       await prisma.project.update({
         where: { id: projectId },
         data: { status: ProjectStatus.READY },
       });
 
-      const finalSummary = pageSummary || componentsSummary || plan || "Project components and page updated successfully.";
+      const finalSummary =
+        pageSummary ||
+        componentsSummary ||
+        plan ||
+        "Project components and page updated successfully.";
 
       await prisma.conversationHistory.create({
         data: {
