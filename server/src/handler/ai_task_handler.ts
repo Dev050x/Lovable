@@ -14,6 +14,7 @@ import { Sandbox } from "@e2b/code-interpreter";
 import { runOrchestratorAgent } from "../agents/orchestrator.js";
 import { runParallelComponentBuilders } from "../agents/component_builder.js";
 import { runPageAssemblerAgent } from "../agents/page_assembler.js";
+import { runVerifierAgent } from "../agents/verifier.js";
 import {
   answerSchema,
   fileContentSchema,
@@ -168,6 +169,9 @@ export const generateProject = async (req: Request, res: Response) => {
     // 3. Run Page Assembler Sub-Agent (Assemble index.tsx from /home/user/components/)
     const pageSummary = await runPageAssemblerAgent(plan, chat.content, sandbox);
 
+    // 4. Run Code Verifier & Self-Repair Agent (Check package.json & verify imports/exports)
+    const verifierSummary = await runVerifierAgent(plan, chat.content, sandbox);
+
     await prisma.project.update({
       where: { id: projectId },
       data: { status: ProjectStatus.READY },
@@ -264,6 +268,9 @@ export const updateProject = async (req: Request, res: Response) => {
 
       // 3. Run Page Assembler Sub-Agent (Assemble index.tsx from /home/user/components/)
       const pageSummary = await runPageAssemblerAgent(plan, prompt, sandbox);
+
+      // 4. Run Code Verifier & Self-Repair Agent (Check package.json & verify imports/exports)
+      const verifierSummary = await runVerifierAgent(plan, prompt, sandbox);
 
       await prisma.project.update({
         where: { id: projectId },
